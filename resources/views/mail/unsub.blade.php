@@ -1,0 +1,2 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Unsubscribed — {{ config('app.name') }}</title></head>
+<body style="font-family:Arial,sans-serif;line-height:1.6"><h1>You’re unsubscribed</h1><p>Your email has been removed from the {{ config('app.name') }} mailing list.</p><a href="{{ url('/') }}" rel="noreferrer">Return to the store</a></body></html>

@@ -1,0 +1,80 @@
+{
+  "review": {
+    "visual": {
+      "steps": [
+        {
+          "id": "design",
+          "action": "Record desktop/mobile design decision, screenshots and source comparison"
+        },
+        {
+          "id": "branding",
+          "action": "Inspect rendered branding, factual copy and all emails for reference identity"
+        }
+      ]
+    },
+    "accessibility-performance": {
+      "steps": [
+        {
+          "id": "accessibility",
+          "action": "Record keyboard, focus, zoom/reflow, contrast and assistive technology outcomes"
+        },
+        {
+          "id": "performance",
+          "action": "Record production assets, image sizes, device/network and performance results"
+        }
+      ]
+    }
+  },
+  "staging": {
+    "persistent-deploy": {
+      "steps": [
+        {
+          "id": "persistence",
+          "action": "Preserve representative records/uploads through deployment and additive migrations"
+        },
+        {
+          "id": "workers",
+          "action": "Verify queue workers and scheduler on target"
+        },
+        {
+          "id": "recovery",
+          "action": "Backup/restore on isolated DB/storage and exercise code rollback"
+        }
+      ]
+    },
+    "stripe-boundaries": {
+      "steps": [
+        {
+          "id": "payment",
+          "action": "Use real test-mode Stripe and webhook with no browser return"
+        },
+        {
+          "id": "contention",
+          "action": "Exercise stock contention, replay, pending expiry and method-specific Zip verification if enabled"
+        },
+        {
+          "id": "mail",
+          "action": "Prove real staging mail boundary and retry recovery"
+        }
+      ]
+    }
+  },
+  "launch": {
+    "launch-inputs": {
+      "steps": [
+        {
+          "id": "owner",
+          "action": "Confirm real photos, factual stock and commercial policy"
+        },
+        {
+          "id": "operations",
+          "action": "Read-only verification of release-specific host, admin, sender, storage, backup, HTTPS and webhook configuration evidence"
+        },
+        {
+          "id": "release",
+          "action": "Review tested artifact, migration compatibility, rollback and final independent acceptance"
+        }
+      ]
+    }
+  }
+}
