@@ -36,6 +36,27 @@
   transition: background-color var(--hv-motion-quick) var(--hv-motion-gentle), box-shadow var(--hv-motion-quick) var(--hv-motion-gentle), transform var(--hv-motion-quick) var(--hv-motion-gentle);
 }
 
+.hidden-vault img { max-width: 100%; }
+.hidden-vault .page-width, .hidden-vault main, .hidden-vault section, .hidden-vault article { min-width: 0; }
+.hidden-vault .hidden-vault-menu ul, .hidden-vault .hidden-vault-mobile-menu ul, .hidden-vault .hidden-vault-search__results { list-style: none; margin: 0; padding: 0; }
+.hidden-vault .hidden-vault-menu a, .hidden-vault .hidden-vault-mobile-menu a { display: inline-flex; min-height: 44px; align-items: center; }
+.hidden-vault .hidden-vault-search input { min-height: 44px; width: 100%; }
+
+@media (max-width: 767px) {
+  .hidden-vault .store-header { min-height: 72px; padding: 16px; flex-wrap: wrap; }
+  .hidden-vault .hidden-vault-desktop-nav { display: none; }
+  .hidden-vault .menu-toggle { display: inline-flex; min-height: 44px; align-items: center; }
+  .hidden-vault .header-actions { margin-left: auto; gap: 12px; }
+  .hidden-vault .header-actions > :not(:first-child):not(:nth-child(3)) { display: none; }
+  .hidden-vault .hidden-vault-mobile-menu { width: 100%; border-top: 1px solid var(--hv-border-default); padding-top: 16px; }
+  .hidden-vault .hidden-vault-mobile-menu__actions, .hidden-vault .hidden-vault-mobile-menu nav { display: grid; gap: 4px; }
+}
+
+@media (min-width: 768px) {
+  .hidden-vault .hidden-vault-mobile-menu { display: none; }
+  .hidden-vault .hidden-vault-menu { display: none; }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .hidden-vault [data-hv-action="primary"]:hover:not(:disabled) {
     box-shadow: var(--hv-warm-glow);
