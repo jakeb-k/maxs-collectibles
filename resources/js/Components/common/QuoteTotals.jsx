@@ -20,9 +20,9 @@ export default function QuoteTotals({ quote }) {
     ["Total", quote.totals.total_minor],
   ];
   return (
-    <dl className="quote-totals">
+    <dl className="quote-totals divide-y divide-[#E8DDC4] border-y border-[#3E3A32] text-sm text-[#0D0C09]">
       {rows.map(([label, minor]) => (
-        <div key={label}>
+        <div key={label} className={`flex items-baseline justify-between gap-4 py-3 ${label === "Total" ? "text-base font-semibold" : ""}`}>
           <dt>{label}</dt>
           <dd>
             <Money minor={minor} currency={quote.currency} />

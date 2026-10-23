@@ -1,6 +1,6 @@
 @import "tailwindcss" source(none);
-@config "../../tailwind.config.js";
 @import "./hidden-vault.css";
+@config "../../tailwind.config.js";
 @source "../js";
 @source "../views";
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views";

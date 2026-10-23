@@ -61,18 +61,23 @@ export default function Checkout({ resume }) {
     );
   };
   return (
-    <div className="page-width checkout-page">
+    <div className="hidden-vault bg-[#F8F4E9] text-[#0D0C09]">
+      <div className="page-width checkout-page py-8 md:py-12">
       <Head title="Checkout" />
-      <p className="eyebrow">
-        <Link href="/products/all">Collection</Link> / Checkout
-      </p>
-      <h1>Your next find.</h1>
-      <div className="checkout-layout">
+      <nav className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]" aria-label="Breadcrumb">
+        <Link href={route("products.index", "all")}>Collection</Link><span aria-hidden="true"> / </span><span>Checkout</span>
+      </nav>
+      <header className="mt-5 border-b border-[#3E3A32] pb-6">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Secure checkout</p>
+        <h1 data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)] leading-[1.29] md:text-[var(--hv-display-md)] md:leading-[1.2]">Review your quote.</h1>
+        <p className="mt-3 max-w-2xl text-sm text-[#3E3A32]">Prices, stock, discounts and delivery are confirmed by the server before payment.</p>
+      </header>
+      <div className="checkout-layout mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)] lg:items-start">
         <div className="checkout-details">
           <ShoppingCart onEdit={invalidate} checkoutLink={false} />
-          <form onSubmit={requestQuote} className="checkout-details">
-            <section className="surface">
-              <h2>Contact details</h2>
+          <form onSubmit={requestQuote} className="checkout-details mt-8 grid gap-6">
+            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Step 1</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">Contact details</h2>
               <div className="form-grid">
                 {field(
                   "contact",
@@ -92,8 +97,8 @@ export default function Checkout({ resume }) {
                 {field("contact", "mobile", "Australian mobile", "tel", "tel")}
               </div>
             </section>
-            <section className="surface">
-              <h2>Delivery address</h2>
+            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Step 2</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">Delivery address</h2>
               <div className="form-grid">
                 {field(
                   "address",
@@ -129,8 +134,8 @@ export default function Checkout({ resume }) {
                 address lookup is required.
               </p>
             </section>
-            <section className="surface">
-              <h2>Promo code</h2>
+            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+              <h2 data-hv-type="display" className="text-[var(--hv-heading-sm)]">Promo code</h2>
               <label htmlFor="promo-code">
                 Code (optional)
                 <input
@@ -149,7 +154,7 @@ export default function Checkout({ resume }) {
             </section>
             {!attempt && (
               <button
-                className="button button-light"
+                data-hv-action="primary" className="min-h-11 px-5 py-3"
                 disabled={busy || !products.length}
               >
                 {busy ? "Checking…" : "Review your quote ↗"}
@@ -157,12 +162,12 @@ export default function Checkout({ resume }) {
             )}
           </form>
         </div>
-        <aside className="surface checkout-summary">
-          <h2>{attempt ? "Existing payment attempt" : "Review your quote"}</h2>
+        <aside className="surface checkout-summary border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6 lg:sticky lg:top-6">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Server-authoritative</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">{attempt ? "Existing payment attempt" : "Review your quote"}</h2>
           {quote ? (
             <>
               {quote.lines.map((line, i) => (
-                <div key={i} className="summary-line">
+                <div key={i} className="summary-line flex justify-between gap-4 border-b border-[#F8F4E9] py-3 text-sm">
                   <span>
                     {line.title} × {line.quantity}
                   </span>
@@ -173,13 +178,13 @@ export default function Checkout({ resume }) {
                 </div>
               ))}
               <QuoteTotals quote={quote} />
-              <p className="muted">
+              <p className="mt-4 text-sm text-[#3E3A32]">
                 These amounts come from the current server quote. Payment is
                 confirmed only by the order status.
               </p>
             </>
           ) : (
-            <p className="muted">
+            <p className="mt-4 text-sm text-[#3E3A32]">
               {attempt
                 ? "Retrying uses the original order and amounts. Changes to your bag are kept for later; they do not alter this payment."
                 : "Delivery, discounts and tax appear after your quote is checked. No payment has been made."}
@@ -190,7 +195,7 @@ export default function Checkout({ resume }) {
               ref={errorFocus}
               tabIndex="-1"
               role={Object.keys(errors).length ? "alert" : "status"}
-              className="checkout-message"
+              className="checkout-message mt-5 border border-[#3E3A32] bg-[#F8F4E9] p-4 text-sm"
             >
               {message}
               {Object.entries(errors)
@@ -207,7 +212,7 @@ export default function Checkout({ resume }) {
           )}
           {(quote || attempt) && !closed && (
             <button
-              className="button button-light"
+              data-hv-action="primary" className="mt-5 min-h-11 w-full px-5 py-3"
               disabled={busy}
               onClick={pay}
             >
@@ -237,11 +242,12 @@ export default function Checkout({ resume }) {
             </div>
           )}
           {closed && (
-            <button className="button mt-4" onClick={startAgain}>
+            <button className="mt-4 min-h-11 border border-[#3E3A32] px-5 py-3" type="button" onClick={startAgain}>
               Start a new checkout
             </button>
           )}
         </aside>
+      </div>
       </div>
     </div>
   );
