@@ -2,12 +2,12 @@ import { Head } from "@inertiajs/react";
 import ContactForm from "@/Components/ContactForm";
 export default function FAQs() {
   return (
-    <div className="page-width py-12 max-w-5xl">
+    <div className="hidden-vault min-h-full bg-[#F8F4E9] text-[#0D0C09]"><div className="page-width max-w-5xl py-12">
       <Head title="Information and contact" />
-      <p className="eyebrow">Max’s Collectibles / Information</p>
-      <h1 className="my-6">A few useful details.</h1>
-      <section className="surface my-8">
-        <h2>Before you buy</h2>
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Max’s Collectibles / Information</p>
+      <h1 data-hv-type="display" className="my-6 text-[var(--hv-display-sm)] md:text-[var(--hv-display-md)]">A few useful details.</h1>
+      <section className="my-8 border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+        <h2 data-hv-type="display" className="text-[var(--hv-heading-sm)]">Before you buy</h2>
         <div className="space-y-5">
           <details open>
             <summary className="cursor-pointer py-3">
@@ -50,14 +50,14 @@ export default function FAQs() {
           </details>
         </div>
       </section>
-      <section id="contact" className="surface">
-        <h2>Contact Max</h2>
+      <section id="contact" className="border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+        <h2 data-hv-type="display" className="text-[var(--hv-heading-sm)]">Contact Max</h2>
         <p className="mb-6">
           A general question about the collection or an order? Leave a message
           below.
         </p>
         <ContactForm />
       </section>
-    </div>
+    </div></div>
   );
 }

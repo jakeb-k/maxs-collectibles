@@ -69,7 +69,7 @@ export default function ContactForm() {
         id="contact-message"
         name="message"
         rows="6"
-        className="w-full bg-[#101713] text-[#edeee9] border-[#67766c]"
+        className="w-full border-[#3E3A32] bg-[#F8F4E9] text-[#0D0C09]"
         value={data.message}
         required
         onChange={(e) => form.setData("message", e.target.value)}
@@ -85,7 +85,7 @@ export default function ContactForm() {
         For an order question, include its reference. Please keep passwords and
         payment card details out of messages.
       </p>
-      <button className="button button-light" disabled={busy}>
+      <button data-hv-action="primary" className="min-h-11 px-5 py-3" disabled={busy}>
         {busy ? "Submitting…" : "Send message"}
       </button>
       {message && <p role="status">{message}</p>}

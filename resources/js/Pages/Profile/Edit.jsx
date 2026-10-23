@@ -11,10 +11,10 @@ export default function Edit({
   location = [],
 }) {
   return (
-    <div className="page-width py-12">
+    <div className="hidden-vault min-h-full bg-[#F8F4E9] text-[#0D0C09]"><div className="page-width py-12">
       <Head title="Your account" />
-      <p className="eyebrow">Max’s Collectibles / Account</p>
-      <h1 className="text-4xl my-6">{auth.user.name}</h1>
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Max’s Collectibles / Account</p>
+      <h1 data-hv-type="display" className="my-6 text-[var(--hv-display-sm)]">{auth.user.name}</h1>
       <div className="grid lg:grid-cols-2 gap-6 items-start">
         <div className="space-y-6">
           <UpdateProfileInformationForm
@@ -25,8 +25,8 @@ export default function Edit({
           <UpdatePasswordForm />
           <DeleteUserForm />
         </div>
-        <section className="surface">
-          <h2>Your orders</h2>
+        <section className="border border-[#3E3A32] bg-[#E8DDC4] p-5">
+          <h2 data-hv-type="display" className="text-[var(--hv-heading-sm)]">Your orders</h2>
           {orders.length ? (
             orders.map((order) => (
               <a
@@ -48,6 +48,6 @@ export default function Edit({
           </p>
         </section>
       </div>
-    </div>
+    </div></div>
   );
 }
