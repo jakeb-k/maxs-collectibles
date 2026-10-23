@@ -2,30 +2,42 @@ import { Link } from "@inertiajs/react";
 import useCartStore from "@/Stores/useCartStore";
 import useCatalogueItems from "@/utils/useCatalogueItems";
 import Money from "@/Components/common/Money";
+import ProductImage from "@/Components/product/ProductImage";
+
 export default function ShoppingCart({ onEdit, checkoutLink = true }) {
   const { products, updateQuantity, removeItem, notice } = useCartStore();
   const current = useCatalogueItems(products.map((p) => p.id));
+  const needsQuoteReduction = products.length > 99;
   return (
-    <section className="surface" aria-label="Shopping bag">
-      <h2>Your bag</h2>
-      {notice && <p role="status">{notice}</p>}
+    <section className="hidden-vault-bag__contents" aria-label="Shopping bag">
+      <div className="border-b border-[#C9A661] pb-4">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#E8DDC4]">Your cabinet</p>
+        <h2 data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)]">Your bag</h2>
+      </div>
+      {notice && <p role="status" className="mt-4 border border-[#C9A661] p-3 text-sm">{notice}</p>}
       {current.pending && <p role="status">Checking current items…</p>}
       {current.error && (
         <div role="alert">
           <p>{current.error}</p>
-          <button className="button" onClick={current.refresh}>
+          <button className="mt-3 min-h-11 underline underline-offset-4" type="button" onClick={current.refresh}>
             Retry bag refresh
           </button>
         </div>
       )}
       {!products.length && (
-        <div className="empty-state">
+        <div className="empty-state mt-6 border border-[#C9A661] p-5">
           <p>Your bag is empty.</p>
           <Link className="text-link" href="/products/all">
             Explore the collection ↗
           </Link>
         </div>
       )}
+      {needsQuoteReduction && (
+        <div role="alert" className="mt-5 border border-[#FF4D6D] bg-[#3E3A32] p-4 text-sm">
+          This bag has {products.length} selections. Checkout can quote up to 99 selections, so remove at least {products.length - 99} before requesting a quote.
+        </div>
+      )}
+      <div className="divide-y divide-[#E8DDC4]">
       {products.map((line) => {
         const product = current.products.find((p) => p.id === line.id);
         const missing = current.missing.includes(line.id);
@@ -38,9 +50,13 @@ export default function ShoppingCart({ onEdit, checkoutLink = true }) {
         return (
           <article
             key={line.line_key}
-            className="border-b border-[#46534c] py-5"
+            className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 py-5"
           >
-            <h3>
+            <div className="aspect-square overflow-hidden border border-[#C9A661] bg-[#3E3A32]">
+              <ProductImage image={product?.images?.[0]} name={product?.name || `item ${line.id}`} />
+            </div>
+            <div>
+            <h3 data-hv-type="display" className="text-[var(--hv-heading-sm)]">
               {product ? (
                 <Link href={`/product/${line.id}`}>{product.name}</Link>
               ) : missing ? (
@@ -50,7 +66,7 @@ export default function ShoppingCart({ onEdit, checkoutLink = true }) {
               )}
             </h3>
             {product && (
-              <p className="my-2">
+              <p className="my-2 text-sm">
                 <Money
                   minor={product.display_unit_minor}
                   currency={product.currency}
@@ -82,7 +98,7 @@ export default function ShoppingCart({ onEdit, checkoutLink = true }) {
                 Quantity for {product?.name || `item ${line.id}`}
                 <input
                   type="number"
-                  className="max-w-28"
+                  className="max-w-28 bg-[#F8F4E9] text-[#0D0C09]"
                   min="1"
                   max="999999"
                   value={line.quantity}
@@ -93,7 +109,8 @@ export default function ShoppingCart({ onEdit, checkoutLink = true }) {
                 />
               </label>
               <button
-                className="text-link"
+                className="min-h-11 underline underline-offset-4"
+                type="button"
                 aria-label={`Remove ${product?.name || `item ${line.id}`} from bag`}
                 onClick={() => {
                   removeItem(line.line_key);
@@ -103,19 +120,21 @@ export default function ShoppingCart({ onEdit, checkoutLink = true }) {
                 Remove
               </button>
             </div>
+            </div>
           </article>
         );
       })}
+      </div>
       {products.length > 0 && (
         <>
-          <p className="muted">
+          <p className="mt-5 text-sm text-[#E8DDC4]">
             Prices and availability are checked again in your checkout quote.
           </p>
-          <button className="text-link" onClick={current.refresh}>
+          <button className="mt-2 min-h-11 underline underline-offset-4" type="button" onClick={current.refresh}>
             Refresh bag
           </button>
           {checkoutLink && (
-            <Link className="button button-light mt-5 w-full" href="/checkout">
+            <Link className={`mt-5 flex min-h-11 w-full items-center justify-center px-5 py-3 ${needsQuoteReduction ? "pointer-events-none opacity-50" : ""}`} data-hv-action="primary" aria-disabled={needsQuoteReduction || undefined} href="/checkout">
               Review checkout ↗
             </Link>
           )}
