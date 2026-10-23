@@ -22,7 +22,7 @@ export default function ProductImage({
     );
   return (
     <img
-      className={`item-photo ${className}`}
+      className={`item-photo aspect-square w-full object-contain ${className}`}
       src={src}
       srcSet={
         image.derivatives
