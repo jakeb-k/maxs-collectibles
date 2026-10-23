@@ -6,7 +6,9 @@
  * existing named catalogue route until the owner replaces this map with
  * verified public tags and editorial asset metadata.
  */
-const catalogueRoute = (type) => route("products.index", { category: "all", tag: true, type });
+// `type` is the existing public catalogue filter. Do not use the legacy
+// `tag=true` branch: it filters by the route category's tag type instead.
+const catalogueRoute = (type) => route("products.index", { category: "all", type });
 
 export const vaultNavigation = Object.freeze({
     status: "provisional-placeholder-catalogue",
