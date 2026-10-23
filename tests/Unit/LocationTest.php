@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class LocationTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
     public Location $location; 
 
     public Order $order; 

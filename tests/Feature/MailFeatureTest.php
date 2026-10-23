@@ -2,23 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\SendContactEmail;
-use App\Jobs\SendSubscribersWelcomeEmail;
-use Illuminate\Foundation\Testing\WithFaker;
-use PHPUnit\Framework\Attributes\Test;
-use App\Models\User;
 use App\Models\SubscriberEmail;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\NewSubscriberEmail;
-use App\Notifications\ServiceContactNotification;
-use App\Services\ZohoMailerService;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Notifications\AnonymousNotifiable;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\URL;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
-use Closure; 
 
 class MailFeatureTest extends TestCase
 {
@@ -38,9 +28,6 @@ class MailFeatureTest extends TestCase
     #[Test]
     public function it_sends_a_contact_email_to_the_admin()
     {
-        // Mock the mail sending
-        Notification::fake();
-        Queue::fake(); 
         $data =  [
             "first_name" => "John",
             "last_name" => "Doe",
@@ -50,10 +37,10 @@ class MailFeatureTest extends TestCase
         // Act: Send a contact email
         $response = $this->postJson(route("contact.email"),$data);
 
-        // Assert: Verify the email was sent
+        // Verify the durable intent; the scheduler owns provider delivery.
         $response->assertStatus(200)->assertJson(["success" => true]);
 
-        Queue::assertPushed(SendContactEmail::class);
+        $this->assertDatabaseHas('notification_deliveries', ['type' => 'contact', 'state' => 'pending', 'recipient' => config('mail.contact_to')]);
     }
 
     #[Test]
@@ -75,8 +62,6 @@ class MailFeatureTest extends TestCase
     #[Test]
     public function it_subscribes_an_email_to_the_mailing_list()
     {
-        Notification::fake();
-        Queue::fake();
 
         // Act
         $response = $this->postJson(route("subscribe.email"), [
@@ -86,17 +71,13 @@ class MailFeatureTest extends TestCase
         // Assert
         $response
             ->assertStatus(200)
-            ->assertJson(["success" => "This didn't fail"]);
+            ->assertJson(["success" => true, "delivery_state" => "pending"]);
 
         $this->assertDatabaseHas("subscriber_emails", [
             "email" => "subscriber@example.com",
         ]);
 
-        Queue::assertPushed(SendSubscribersWelcomeEmail::class, function ($job) {
-            return Closure::bind(function () {
-                return $this->email === 'subscriber@example.com';
-            }, $job, $job::class)();
-        });
+        $this->assertDatabaseHas('notification_deliveries', ['type' => 'welcome', 'state' => 'pending', 'recipient' => 'subscriber@example.com']);
     }
 
 
@@ -127,8 +108,8 @@ class MailFeatureTest extends TestCase
 
         // Act: Unsubscribe the email
         $response = $this->get(
-            route("unsubscribe.email", [
-                "email" => urlencode("unsubscribe@example.com"),
+            URL::signedRoute("unsubscribe.email", [
+                "email" => "unsubscribe@example.com",
             ])
         );
 
@@ -145,8 +126,8 @@ class MailFeatureTest extends TestCase
     {
         // Act: Unsubscribe an email that doesn't exist
         $response = $this->get(
-            route("unsubscribe.email", [
-                "email" => urlencode("nonexistent@example.com"),
+            URL::signedRoute("unsubscribe.email", [
+                "email" => "nonexistent@example.com",
             ])
         );
 

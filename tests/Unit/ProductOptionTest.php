@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class ProductOptionTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
     public ProductOption $productOption;
     
     public Product $product;

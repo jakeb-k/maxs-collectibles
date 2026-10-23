@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class OrderTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
     public Order $order;
 
     public Location $location;
@@ -42,14 +43,12 @@ class OrderTest extends TestCase
 
         $this->order->locations()->attach($this->location);
         $this->order->images()->saveMany($this->images);
-        $this->order->products()->attach(
-            $this->products->pluck('id')->toArray(), // Get product IDs
-            [
-                'quantity' => 3,
-                'color' => 'red',
-                'size' => 'L',
-            ]
-        );
+        foreach ($this->products as $product) {
+            \App\Models\OrderProduct::factory()->create([
+                'order_id' => $this->order->id, 'product_id' => $product->id,
+                'title' => $product->name, 'quantity' => 3,
+            ]);
+        }
     }
 
     #[Test]

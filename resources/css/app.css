@@ -1,10 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@config "../../tailwind.config.js";
+@source "../js";
+@source "../views";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views";
 @font-face {
   font-family: Oswald;
   src: url("../assets/fonts/Oswald-Regular.ttf") format("truetype");
-  font-display: swap;
+  font-display: optional;
 }
 @font-face {
   font-family: Roboto-Mono;
@@ -72,6 +74,13 @@ textarea {
   min-height: 46px;
   width: 100%;
   max-width: 100%;
+}
+.storefront input[type="checkbox"] {
+  color: var(--accent);
+}
+.storefront input[type="checkbox"]:checked {
+  background-color: #101713;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='%23c7d9cc' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
 }
 label {
   display: flex;
@@ -220,9 +229,15 @@ small {
 }
 .intro-copy h1 {
   margin-top: 32px;
+  font-family: Oswald, "Arial Narrow", sans-serif;
+  font-size: clamp(3.7rem, 7vw, 6.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
 }
 .intro-copy h1 em {
-  font-family: Georgia, serif;
+  font-family: inherit;
+  font-style: normal;
   font-weight: 400;
 }
 .intro-copy > p:not(.eyebrow) {

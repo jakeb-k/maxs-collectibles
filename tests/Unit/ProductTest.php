@@ -38,7 +38,7 @@ class ProductTest extends TestCase
         ]);
 
         foreach ($orders as $order) {
-            $product->orders()->attach($order, ['quantity' => 5]);
+            \App\Models\OrderProduct::factory()->create(['order_id' => $order->id, 'product_id' => $product->id, 'title' => $product->name, 'quantity' => 5]);
         }
 
         $this->assertCount(2, $product->orders);

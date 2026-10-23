@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
@@ -31,6 +32,7 @@ class ProductControllerTest extends TestCase
         $this->user->assignRole(Role::create(["name" => "admin"]));
         $this->actingAs($this->user);
         $this->product = Product::factory()->create();
+        Storage::fake('public');
     }
 
     #[Test]
@@ -53,8 +55,8 @@ class ProductControllerTest extends TestCase
     #[Test]
     public function user_can_view_the_product_index_for_sales()
     {
-        Product::factory()->create(["discount" => null]);
-        Product::factory()->create(["discount" => 10]);
+        Product::factory()->create(["discount_bps" => 0]);
+        Product::factory()->create(["discount_bps" => 1000]);
         $response = $this->get(route("products.index", ["type" => "sale"]));
 
         $response
@@ -167,152 +169,63 @@ class ProductControllerTest extends TestCase
         );
     }
 
-    #[Test]
-    public function user_can_store_a_product()
+    private function authoring(array $overrides = []): array
     {
-        $this->actingAs($this->user);
-        $images = [
-            UploadedFile::fake()->image("image1.jpg"),
-            UploadedFile::fake()->image("image2.png"),
-            UploadedFile::fake()->image("image3.png"),
-        ];
-
-        $response = $this->post(route("product.store"), [
-            "name" => "New Product",
-            "type" => "womens",
-            "url" => "https://google.com",
-            "delivery_date" => "13",
-            "price" => 20.0,
-            "discount" => 20,
-            "description" => "This is a description",
-            "images" => $images,
-        ]);
-
-        // dd($response->json());
-        $response
-            ->assertStatus(200)
-            ->assertJsonStructure(["success", "products"]);
-
-        $this->assertDatabaseHas("products", [
-            "name" => "New Product",
-            "type" => "Womens",
-            "url" => "https://google.com",
-            "delivery_date" => 13,
-            "price" => 20.0,
-            "discount" => 0.2,
-            "description" => "This is a description",
-        ]);
+        return array_replace([
+            'name' => 'New Product', 'description' => 'Supplied factual description.',
+            'category_ids' => [Tag::findOrCreate('Objects', 'category')->id], 'type_tag_ids' => [],
+            'price_minor' => 2000, 'discount_bps' => 2000, 'currency' => 'AUD',
+            'stock_quantity' => 3, 'available' => true, 'facts' => [], 'options' => [],
+            'no_images' => false, 'kept_images' => [],
+            'images' => [UploadedFile::fake()->image('fixture.jpg')],
+        ], $overrides);
     }
 
     #[Test]
-    public function user_can_update_a_product()
+    public function user_can_store_a_product(): void
     {
-        $this->actingAs($this->user);
-        $images = [
-            UploadedFile::fake()->image("image1.jpg"),
-            UploadedFile::fake()->image("image2.png"),
-            UploadedFile::fake()->image("image3.png"),
-        ];
-
-        $product = Product::factory()->create();
-        $colorOption = ProductOption::factory()->create([
-            "type" => "color",
-            "product_id" => $product->id,
-        ]);
-
-        $response = $this->putJson(route("product.update", $product), [
-            "name" => "Updated Product",
-            "type" => "womens",
-            "url" => "https://google.com",
-            "delivery_date" => "13",
-            "price" => 20.0,
-            "discount" => 20,
-            "description" => "This is an updated description",
-            "images" => $images,
-            "colors" => "red,blue,green",
-            "colorOptionId" => $colorOption->id,
-        ]);
-
-        $response
-            ->assertStatus(200)
-            ->assertJsonStructure(["success", "products"]);
-
-        $this->assertDatabaseHas("products", [
-            "name" => "Updated Product",
-            "type" => "Womens",
-            "url" => "https://google.com",
-            "delivery_date" => 13,
-            "price" => 20.0,
-            "discount" => 0.2,
-            "description" => "This is an updated description",
-        ]);
-
-        $this->assertDatabaseHas("product_options", [
-            "id" => $colorOption->id,
-            "type" => "color",
-            "values" => "red.blue.green",
-        ]);
+        $response = $this->postJson(route('product.store'), $this->authoring());
+        $response->assertCreated()->assertJsonPath('product.price_minor', 2000)->assertJsonPath('product.discount_bps', 2000)
+            ->assertJsonCount(1, 'product.images');
+        $this->assertDatabaseHas('products', ['id' => $response->json('product.id'), 'name' => 'New Product', 'stock_quantity' => 3]);
     }
 
     #[Test]
-    public function user_can_only_update_a_product_with_valid_values()
+    public function user_can_update_a_product(): void
     {
-        $this->actingAs($this->user);
-        $images = [
-            UploadedFile::fake()->image("image1.jpg"),
-            UploadedFile::fake()->image("image2.png"),
-            UploadedFile::fake()->image("image3.png"),
-        ];
-
         $product = Product::factory()->create();
-        $colorOption = ProductOption::factory()->create([
-            "type" => "color",
-            "product_id" => $product->id,
-        ]);
+        ProductOption::factory()->create(['product_id' => $product->id]);
+        $payload = $this->authoring(['name' => 'Updated Product', 'options' => [['type' => 'Finish', 'values' => ['Red', 'Blue', 'Green']]]]);
+        $this->putJson(route('product.update', $product), $payload)->assertOk()->assertJsonPath('product.name', 'Updated Product')
+            ->assertJsonPath('product.options.0.values', ['Red', 'Blue', 'Green']);
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'Updated Product', 'price_minor' => 2000, 'discount_bps' => 2000]);
+        $this->assertSame(['Red', 'Blue', 'Green'], $product->options()->sole()->values);
+    }
 
-        $response = $this->putJson(route("product.update", $product), [
-            "name" => "Updated Product",
-            "type" => "womens",
-            "url" => "https://google.com",
-            "delivery_date" => "13",
-            "price" => "invalid price",
-            "discount" => 20,
-            "description" => "This is an updated description",
-            "images" => $images,
-            "colors" => "red,blue,green",
-            "colorOptionId" => $colorOption->id,
-        ]);
-
-        $response->assertStatus(422)->assertJson([
-            "message" => "The price must be a numeric value.",
-            "errors" => [
-                "price" => [
-                    0 => "The price must be a numeric value.",
-                ],
-            ],
-        ]);
+    #[Test]
+    public function user_can_only_update_a_product_with_valid_values(): void
+    {
+        $before = $this->product->fresh()->getAttributes();
+        $this->putJson(route('product.update', $this->product), $this->authoring(['price_minor' => 'invalid price']))
+            ->assertUnprocessable()->assertJsonValidationErrors('price_minor');
+        $this->assertSame($before, $this->product->fresh()->getAttributes());
+        $this->assertCount(0, Storage::disk('public')->allFiles());
     }
 
     #[Test]
     public function user_can_get_bestsellers()
     {
-        $products = Product::factory(12)
-            ->create()
-            ->each(function ($product, $index) {
-                $orders = Order::factory($index)->create();
-                $image = Image::factory()->create();
-
-                $product->images()->attach($image->id);
-
-                foreach ($orders as $order) {
-                    $product->orders()->attach($order->id, [
-                        "quantity" => rand(1, 10),
-                    ]);
-                }
-            });
+        foreach (Product::factory(12)->create() as $index => $product) {
+            $order = Order::factory()->create(['status' => $index % 2 ? 'Paid' : 'Completed']);
+            \App\Models\OrderProduct::factory()->create(['product_id' => $product->id, 'order_id' => $order->id,
+                'title' => $product->name, 'quantity' => $index + 1]);
+        }
+        $unpaid = Order::factory()->create();
+        \App\Models\OrderProduct::factory()->create(['product_id' => $this->product->id, 'order_id' => $unpaid->id, 'quantity' => 1000]);
 
         $response = $this->get(route("home.bestsellers"));
         $response->assertStatus(200)->assertJsonCount(10, "bestsellers");
+        $this->assertNotContains($this->product->id, array_column($response->json("bestsellers"), "id"));
     }
 
     #[Test]
@@ -343,9 +256,10 @@ class ProductControllerTest extends TestCase
 
         $response = $this->postJson(route("product.available", $product));
 
-        $response->assertStatus(200)->assertJson([
-            "products" => [],
-        ]);
+        $response->assertOk()->assertJsonCount(2, 'products');
+        $returned = collect($response->json('products'))->firstWhere('id', $product->id);
+        $this->assertNotNull($returned);
+        $this->assertTrue($returned['available']);
 
         $this->assertDatabaseHas("products", [
             "id" => $product->id,
@@ -360,9 +274,8 @@ class ProductControllerTest extends TestCase
 
         $response = $this->deleteJson(route("product.destroy", $product));
 
-        $response->assertStatus(200)->assertJson([
-            "products" => [],
-        ]);
+        $response->assertOk()->assertJsonCount(1, 'products');
+        $this->assertSame([$this->product->id], array_column($response->json('products'), 'id'));
 
         $this->assertSoftDeleted("products", [
             "id" => $product->id,

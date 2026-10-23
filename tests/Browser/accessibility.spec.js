@@ -179,10 +179,12 @@ test("keyboard skip/menu/catalogue/gallery and AX semantics with focus visible",
   ).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("main")).toBeFocused();
-  const menu = page.getByRole("button", { name: "Menu", exact: true });
+  const menu = page.locator('button[aria-controls="store-navigation"]');
+  await expect(menu).toHaveAccessibleName("Menu");
   await menu.focus();
   await page.keyboard.press("Enter");
   await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await expect(menu).toHaveAccessibleName("Close menu");
   await page.keyboard.press("Tab");
   await expect(
     page
@@ -273,7 +275,7 @@ test("account and admin keyboard errors, labelled authoring controls, zoom and n
   await page.keyboard.press("Enter");
   await expect(page.getByRole("alert")).toBeFocused();
   await contrast(page, "admin-error");
-  const textarea = page.getByLabel("Item description", { exact: true });
+  const textarea = page.getByRole("textbox", { name: "Item description", exact: true });
   await textarea.focus();
   expect(
     await textarea.evaluate((el) => getComputedStyle(el).outlineStyle),

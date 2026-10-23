@@ -1,24 +1,45 @@
-# Isolated local execution
+# Local development and verification
 
-This application was derived from tracked Picklewear commit `d00299818b87d1da054730dc10b030da0b985c3d`. The existing root README is a preserved canonical-documentation pointer. This document replaces the reference project's generic setup instructions.
+Prerequisites: a running Docker Engine with Docker Compose (Docker Desktop includes both), Git, and Node.js 20 or newer. PHP, Composer, MySQL, npm dependencies and browser binaries run inside containers. Linux x86-64 and macOS ARM use the same checkout-relative commands. The runner prefers `docker compose`, then `docker-compose`; older macOS ARM installations can use its checksum-verified Compose fallback. Images are digest pinned; Debian package installation still requires the package repository and is not an offline OS snapshot.
 
-Use Docker Engine and Node to invoke `node tools/check.mjs compatibility`. The host Node only orchestrates; npm/build run in pinned Node 24 containers and PHP/Composer run in the PHP 8.4 image, including required GD with JPEG/PNG/WebP codecs. Compatibility proves actual resampled encode/decode round trips for every format. On this macOS ARM workstation the runner downloads Docker Compose 5.6.0 into `.cache/bin` and verifies its pinned SHA-256. Docker images are digest-pinned in compose/Dockerfile/runner. PHP extensions are built with the image's Debian package repository; this is not an offline reproducible OS package snapshot.
+## Start a browser preview
 
-The runner ignores host application environment variables and `.env`, generates its own test configuration, rejects cached Laravel configuration and validates DB host/name/non-root user before a connection. It then verifies server hostname and a read-only sentinel in a separate guard database before any migration or reset. MySQL owns only project `.cache/mysql`, publishes `127.0.0.1:13307`, and is managed under compose project `maxs-test`. No production credentials or data are used. Do not execute `migrate:fresh` outside the runner.
+From a fresh clone:
 
-Each run has its own directory under `storage/testing/runs`, app key, session cookie, persistent file sessions, shared file cache/locks, compiled views, logs and application storage. PHP tests may use array sessions/cache through phpunit.xml. Browser requests use persistent file sessions. In-process suites disable optional Inertia SSR because no rendering service is launched; the browser/SSR bundles still compile. Browser production smoke currently verifies the CSR login page. Runtime SSR behavior remains a separately recorded inherited concern for frontend work.
+```sh
+git clone https://github.com/jakeb-k/maxs-collectibles.git
+cd maxs-collectibles
+node tools/dev.mjs up
+```
 
-Only one runner may mutate the shared disposable schema at a time: `.cache/check.lock` refuses concurrent runners. Schema reset also refuses any active labelled test server. Session/cache reset stops the selected server, checks the sentinel and path boundary, clears only that run and rotates its key/cookie. It leaves other run sessions/cache intact. Failed runs retain evidence. After an interrupted runner, verify no owned process is active before removing its stale lock. Never delete another run to fix a lock.
+Open **http://127.0.0.1:8000**. The launcher installs locked Composer/npm dependencies, builds assets, starts MySQL, verifies its sentinel, applies additive migrations and seeds visibly labelled synthetic inventory on first launch. It waits for `/up` before printing readiness. No `.env` editing or host PHP/Composer/MySQL is required. First launch needs network access and may take several minutes. Port 8000 must be available; inspect the occupying process rather than deleting unrelated containers.
 
-Provider safeguards apply to CLI, PHPUnit and HTTP servers: Laravel rejects stray HTTP, mail is faked, Stripe's transport rejects unscripted requests, Zoho mail is bound to a fake. Supplier-import routes and importer/naming job handlers are disabled. The dedicated Docker bridge permits the required loopback publications; provider isolation is enforced by these fail-closed application transports, not an outbound firewall. Docker internal networks were tested and suppressed published ports on this engine.
+Browse the home and catalogue, open a listing, add an available item to the cart, and open checkout. Log in at `/login` using `browser-admin@example.test` / `isolated-password` to inspect administration. These are public local fixture credentials. Photography and inventory are synthetic; fake payment/mail providers cannot exercise real external acceptance.
 
-Commands:
+```sh
+node tools/dev.mjs stop
+node tools/dev.mjs up
+node tools/dev.mjs logs
+```
 
-- `node tools/check.mjs compatibility`: lock installation, exact runtime versions, platform/manifest checks, real audits/build, negative environment/path/server-sentinel checks, migration prerequisites, fake transport checks, separate-request anonymous/login persistence, reset isolation, then an inherited PHPUnit drift inventory. Drift and advisory exits are retained separately; a compatibility pass does not imply these known inherited tests passed or that the security audit is clean.
-- `node tools/check.mjs php tests/Feature/Auth/AuthenticationTest.php`: execute the selected existing PHPUnit path in the guarded container. Run compatibility first to install/migrate prerequisites.
-- `node tools/check.mjs browser tests/Browser/ProductionAssets.spec.js`: fresh isolated fixture DB, server and real Chromium. The browser shares the server's network namespace, so its supplied base URL stays `http://127.0.0.1:8000`.
-- `node tools/check.mjs build`: clean npm install, browser and SSR bundles, HTTP asset check and real browser production smoke. When the complete `tests/Browser/production.spec.js` is delivered, it replaces the initial T01 login smoke.
-- `node tools/check.mjs fresh`: reset the disposable DB, install/build and execute complete PHPUnit/browser suites. It fails on current inherited drift; later contracts own those repairs. This is the final K18 entry point, not a migrations-only pass.
-- `node tools/check.mjs review visual evidence.json`, `review accessibility-performance evidence.json`, `staging persistent-deploy evidence.json`, `staging stripe-boundaries evidence.json`, `launch launch-inputs evidence.json`: print the named procedure and validate attested evidence. Without evidence they fail. They never deploy, reset staging or charge a payment.
+The preview remains running after the launcher exits. Stop/restart retains its database, files, session key and cookies. Re-run `up` after code changes to rebuild assets. Development runs under Compose project `maxs-dev`, with its own Docker network, `.cache/development/mysql` and `storage/testing/runs/development-preview`. It never shares the disposable test database or runs `migrate:fresh`. Configuration is generated in ignored `.cache/development/run.env`; no developer paths are embedded. The normal isolated testing guards/fake transports also protect this local preview; it is not a production server. Do not expose its loopback port or use real credentials.
 
-Every automated command retains arguments, UTC start time, exit code, signal and stdout/stderr in run `command-*.log` files and `result.json`. Results distinguish runner failure from separately inventoried inherited failures. Runtime directories and `.cache` are ignored and remain under the application workspace. A production data reset is forbidden.
+## Execute checks
+
+```sh
+node tools/check.mjs fresh
+node tools/check.mjs compatibility
+node tools/check.mjs php tests/Feature/Auth/AuthenticationTest.php
+node tools/check.mjs browser tests/Browser/accessibility.spec.js
+node tools/check.mjs build
+```
+
+`fresh` is the integrated gate: locked dependency installation, production client asset build, guarded migration/reset, the **complete PHPUnit suite**, then the **complete Playwright suite**. It attempts both suites even when one fails and exits unsuccessfully for any failure. Each suite's structured summary separates passed, failed, errored, risky and skipped counts; warnings/flaky results are also retained. Browser setup is independently reset after PHP tests so PHP failures cannot leave its fixtures unusable. A startup or dependency failure is a runner failure, never a passed suite. CI runs this same command and uploads the retained result logs and screenshots.
+
+`compatibility` additionally checks exact runtimes, manifests/platform, image codecs, dependency audits, negative environment/path/server-sentinel checks, fake transports and cross-request session/reset isolation. Its complete PHPUnit inventory and advisory exits fail the command when unresolved; historical drift is not a success exception. Scoped PHP/browser checks do not establish complete-suite acceptance. Build mode includes real Chromium asset smoke. Optional runtime SSR is disabled in local fixture servers; the documented build compiles the client bundle only; runtime SSR is not built or accepted and requires a rendering service.
+
+Only `maxs-test` owns the disposable test schema (`maxs_test`) and `.cache/mysql`. Its MySQL endpoint is loopback port 13307; browser servers use ephemeral loopback ports and are stopped after each check. Every run has its own app key, cookie, persistent file sessions/cache, views, application files and logs beneath `storage/testing/runs`. PHPUnit can use array drivers for in-process tests. The runner ignores inherited application environment and `.env`, rejects cached Laravel configuration, verifies DB host/name/non-root user and a read-only server sentinel before migrations/reset, and rejects symlink or outside-path mutation. Provider transports reject unscripted external requests. No production data reset is permitted.
+
+A checkout lock refuses concurrent runners because they share a disposable schema and dependency/build outputs. Preview development data remains separate, but stop the preview before dependency/build changes if actively using it. After an interrupted check, inspect processes/containers and establish that its runner is stopped before removing a stale `.cache/check.lock`; never delete another run to fix locking. Evidence is retained under `storage/testing/runs/<run>/result.json`, command logs, PHPUnit JUnit and Playwright JSON/screenshots. Actual failed/risky/skipped results remain visible.
+
+Manual acceptance entry points (`review visual`, `review accessibility-performance`, `staging persistent-deploy`, `staging stripe-boundaries`, `launch launch-inputs`) require a signed evidence JSON argument; see [acceptance](acceptance.md). Missing evidence fails. These commands never deploy, reset staging or charge a payment.

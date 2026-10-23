@@ -1,22 +1,25 @@
 import fs from 'node:fs';
 import {ensureCompose} from './testing/ensure-compose.mjs';
+import {fixtureEnvironment} from './testing/environment.mjs';
+import {phpSummary,browserSummary} from './testing/results.mjs';
+import {contentState} from './testing/content-state.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const personal='/Users/jakebknowles/personal';
 const runs=path.join(root,'storage/testing/runs');
 const nodeImage='node:24-bookworm@sha256:14078204b6bb268c107ceff6d3c43f45a888105e5c2b18b14c32b3409d93a1b0';
 const cleanEnv=Object.fromEntries(Object.entries(process.env).filter(([k])=>['PATH','HOME','DOCKER_HOST','DOCKER_CONTEXT','DOCKER_CONFIG','COLIMA_HOME'].includes(k)));
+let composeCommand;
 let active, seq=0; const commands=[]; const servers=new Set();
 function boundary(target, base=root) {
   const relative=path.relative(base,target);
   if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) throw Error('Unsafe path boundary');
   let current=base;
   if (fs.realpathSync(base)!==base) throw Error('Symlink root');
-  for (const segment of relative.split(path.sep)) { current=path.join(current,segment); if(fs.existsSync(current)&&fs.lstatSync(current).isSymbolicLink()) throw Error('Symlink path'); }
+  for (const segment of relative.split(path.sep)) { current=path.join(current,segment); if(fs.lstatSync(current,{throwIfNoEntry:false})?.isSymbolicLink()) throw Error('Symlink path'); }
 }
 function command(args,{allowFailure=false,network=true}={}) {
   const startedAt=new Date().toISOString();
@@ -37,15 +40,14 @@ function runCreate(prefix='check') {
   const id=`${prefix}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
   const dir=path.join(runs,id);boundary(dir);fs.mkdirSync(dir,{recursive:true});
   for(const child of ['sessions','cache','views','logs','app','bootstrap','framework','framework/testing'])fs.mkdirSync(path.join(dir,child),{recursive:true});
-  const container=`/app/storage/testing/runs/${id}`;
-  const env={APP_NAME:'Maxs Collectibles',APP_ENV:'testing',APP_DEBUG:'false',INERTIA_SSR_ENABLED:'false',APP_KEY:`base64:${crypto.randomBytes(32).toString('base64')}`,APP_URL:'http://127.0.0.1:18761',MAXS_TEST_GUARD:'maxs-isolated-v1',MAXS_TEST_RUN:id,MAXS_TEST_PROBES:'1',LARAVEL_STORAGE_PATH:container,APP_CONFIG_CACHE:`${container}/config.php`,APP_SERVICES_CACHE:`${container}/bootstrap/services.php`,APP_PACKAGES_CACHE:`${container}/bootstrap/packages.php`,APP_ROUTES_CACHE:`${container}/bootstrap/routes.php`,APP_EVENTS_CACHE:`${container}/bootstrap/events.php`,DB_CONNECTION:'mysql',DB_HOST:'mysql',DB_PORT:'3306',DB_DATABASE:'maxs_test',DB_USERNAME:'maxs_test',DB_PASSWORD:'maxs-isolated-password',SESSION_DRIVER:'file',SESSION_FILES:`${container}/sessions`,SESSION_COOKIE:`maxs_test_${id.replaceAll('-','_')}`,CACHE_STORE:'file',CACHE_FILES:`${container}/cache`,CACHE_PREFIX:`${id}_`,VIEW_COMPILED_PATH:`${container}/views`,QUEUE_CONNECTION:'database',MAIL_MAILER:'array',MAIL_FROM_ADDRESS:'store@example.test',STRIPE_KEY:'pk_test_maxs_fake',STRIPE_SECRET:'sk_test_maxs_fake',STRIPE_WEBHOOK_SECRET:'whsec_fake',ZOHO_ACCOUNT_ID:'fake',BCRYPT_ROUNDS:'4',LOG_CHANNEL:'single',COMPOSER_HOME:'/app/.cache/composer',TMPDIR:container};
+  const env=fixtureEnvironment(id,`base64:${crypto.randomBytes(32).toString('base64')}`);
   const run={id,dir,env,envFile:path.join(dir,'run.env')};save(run);return run;
 }
 function save(run){ fs.writeFileSync(run.envFile,Object.entries(run.env).map(([k,v])=>`${k}=${v}`).join('\n')+'\n',{mode:0o600}); }
 function php(args,run=active,options={}) { return command(['docker','run','--rm','--network','maxs-test_isolated','--env-file',run.envFile,'-v',`${root}:/app`,'-w','/app','maxs-test-php:8.4',...args],options); }
-function compose(args){return command([path.join(root,'.cache/bin/docker-compose'),'--env-file','.cache/current.env','-p','maxs-test',...args]);}
+function compose(args){return command([...composeCommand,'--env-file','.cache/current.env','-p','maxs-test',...args]);}
 function node(args,options={}){return command(['docker','run','--rm','-v',`${root}:/app`,'-w','/app','-e','npm_config_cache=/app/.cache/npm',nodeImage,...args],options);}
-function browser(spec,run){if(spec === 'tests/Browser' || ['tests/Browser/storefront.spec.js','tests/Browser/commerce.spec.js','tests/Browser/accessibility.spec.js','tests/Browser/accounts-contact.spec.js','tests/Browser/production.spec.js'].includes(spec)) php(['php','tools/testing/storefront-fixtures.php'],run);return command(['docker','run','--rm','--network',`container:maxs-test-server-${run.id}`,'-v',`${root}:/app`,'-w','/app','-e','MAXS_BROWSER_URL=http://127.0.0.1:8000','-e',`MAXS_BROWSER_OUTPUT=/app/storage/testing/runs/${run.id}/playwright`,'mcr.microsoft.com/playwright:v1.64.1-noble@sha256:7852dc5a7d72f5fe458a597d690f6c42fbc8e9e26ddfa95f8e6ef552558d9bbf','npx','playwright','test',spec,'--config=tools/testing/playwright.config.js']);}
+function browser(spec,run,{allowFailure=false}={}){if(spec === 'tests/Browser' || ['tests/Browser/storefront.spec.js','tests/Browser/commerce.spec.js','tests/Browser/accessibility.spec.js','tests/Browser/accounts-contact.spec.js','tests/Browser/production.spec.js'].includes(spec)) php(['php','tools/testing/storefront-fixtures.php'],run);return command(['docker','run','--rm','--network',`container:maxs-test-server-${run.id}`,'-v',`${root}:/app`,'-w','/app','-e','MAXS_BROWSER_URL=http://127.0.0.1:8000','-e',`MAXS_BROWSER_OUTPUT=/app/storage/testing/runs/${run.id}/playwright`,'mcr.microsoft.com/playwright:v1.64.1-noble@sha256:7852dc5a7d72f5fe458a597d690f6c42fbc8e9e26ddfa95f8e6ef552558d9bbf','npx','playwright','test',spec,'--config=tools/testing/playwright.config.js','--fail-on-flaky-tests'],{allowFailure});}
 function stop(run){const name=`maxs-test-server-${run.id}`; if(servers.has(name)){command(['docker','rm','-f',name]);servers.delete(name);} }
 function reset(run){
   stop(run);boundary(run.dir,runs);
@@ -97,14 +99,16 @@ function procedure(mode,id,file){
  return evidence;
 }
 const [mode,arg,evidence]=process.argv.slice(2);
+assert.equal(fs.realpathSync(root),root);
+boundary(path.join(root,'.cache'));boundary(runs);boundary(path.join(root,'.cache/check.lock'));
 fs.mkdirSync(path.join(root,'.cache'),{recursive:true});fs.mkdirSync(runs,{recursive:true});
-assert.ok(root.startsWith(personal+'/'));assert.equal(fs.realpathSync(root),root);
 let locked=false;let result={mode,startedAt:new Date().toISOString(),status:'failed'};
 try {
+ Object.assign(result,contentState(root));
  if(['review','staging','launch'].includes(mode)){result.procedure=procedure(mode,arg,evidence);}
  else {
   boundary(path.join(root,'.cache/current.env'));boundary(runs);fs.mkdirSync(path.join(root,'.cache/check.lock'));locked=true;active=runCreate();if(['browser','fresh','build'].includes(mode)){active.env.APP_URL='http://127.0.0.1:8000';save(active);}fs.writeFileSync(path.join(root,'.cache/current.env'),fs.readFileSync(active.envFile));
-  boundary(path.join(root,'.cache/mysql'));await ensureCompose(root);compose(['up','-d','--wait','mysql']);compose(['build','php']);
+  boundary(path.join(root,'.cache/mysql'));composeCommand=await ensureCompose(root);compose(['up','-d','--wait','mysql']);compose(['build','php']);
   if(mode==='compatibility'){
    command(['docker','run','--rm','-v',`${root}:/app`,'-w','/app','-e','COMPOSER_HOME=/app/.cache/composer','maxs-test-php:8.4','composer','install','--no-interaction','--no-scripts']);result.guards=guardChecks();
    result.phpVersion=php(['php','--version']).output;result.imageCapabilities=php(['php','tools/testing/image-capabilities.php']).output;result.nodeVersion=node(['node','--version']).output;
@@ -112,8 +116,36 @@ try {
    php(['composer','check-platform-reqs']);result.composerAudit=command(['docker','run','--rm','-v',`${root}:/app`,'-w','/app','-e','COMPOSER_HOME=/app/.cache/composer','maxs-test-php:8.4','composer','audit','--locked','--format=json'],{allowFailure:true});
    node(['npm','ci']);node(['node','--input-type=module','-e',"import {v4,validate,version} from 'uuid';const ids=Array.from({length:100},()=>v4());if(new Set(ids).size!==100||ids.some(id=>!validate(id)||version(id)!==4))throw Error('UUID v4 consumer contract');console.log('UUID v4 named ESM consumer contract passed');"]);result.npmAudit=node(['npm','audit','--json'],{allowFailure:true});node(['npm','run','build']);
    fresh();php(['php','tools/testing/providers.php']);result.sessions=await sessions();
-   result.inheritedDrift=php(['php','vendor/bin/phpunit','--log-junit',`storage/testing/runs/${active.id}/inherited-junit.xml`],active,{allowFailure:true});
-  } else if(mode==='fresh'){reset(active);node(['npm','ci']);node(['npm','run','build']);fresh();php(['php','vendor/bin/phpunit']);await server();browser('tests/Browser',active);}
+   result.inheritedDrift=php(['php','vendor/bin/phpunit','--colors=never','--fail-on-risky','--fail-on-warning','--log-junit',`storage/testing/runs/${active.id}/inherited-junit.xml`],active,{allowFailure:true});
+   result.phpSuite={exit:result.inheritedDrift.exit,...phpSummary(path.join(active.dir,'inherited-junit.xml'),result.inheritedDrift.output)};
+   if(result.inheritedDrift.exit!==0||result.composerAudit.exit!==0||result.npmAudit.exit!==0)throw Error('Compatibility failed: PHPUnit drift or dependency audit remains unresolved');
+  } else if(mode==='fresh'){
+   command(['docker','run','--rm','-v',`${root}:/app`,'-w','/app','-e','COMPOSER_HOME=/app/.cache/composer','maxs-test-php:8.4','composer','install','--no-interaction','--no-scripts']);
+   php(['composer','validate','--no-check-publish']);php(['composer','check-platform-reqs']);
+   node(['npm','ci']);result.build=node(['npm','run','build'],{allowFailure:true});
+   result.composerAudit=command(['docker','run','--rm','-v',`${root}:/app`,'-w','/app','-e','COMPOSER_HOME=/app/.cache/composer','maxs-test-php:8.4','composer','audit','--locked','--format=json'],{allowFailure:true});
+   result.npmAudit=node(['npm','audit','--json'],{allowFailure:true});
+   result.guards=guardChecks();fresh();php(['php','tools/testing/providers.php']);result.sessions=await sessions();
+   const failures=[];
+   if(result.composerAudit.exit!==0)failures.push('Composer audit');
+   if(result.npmAudit.exit!==0)failures.push('npm audit');
+   try {
+    fresh();
+    const check=php(['php','vendor/bin/phpunit','--colors=never','--fail-on-risky','--fail-on-warning','--log-junit',`storage/testing/runs/${active.id}/phpunit.xml`],active,{allowFailure:true});
+    result.phpSuite={exit:check.exit,...phpSummary(path.join(active.dir,'phpunit.xml'),check.output)};
+    if(check.exit!==0)failures.push('PHPUnit');
+   } catch(error){result.phpSuite={...result.phpSuite,error:String(error.stack||error)};failures.push('PHPUnit setup/report');}
+   try {
+    // PHP suites may leave state behind: build an independent browser fixture database.
+    fresh();await server();
+    const check=browser('tests/Browser',active,{allowFailure:true});
+    result.browserSuite={exit:check.exit,...browserSummary(path.join(active.dir,'playwright/results.json'))};
+    if(check.exit!==0)failures.push('Playwright');
+   } catch(error){result.browserSuite={...result.browserSuite,error:String(error.stack||error)};failures.push('Playwright setup/report');}
+   console.log(JSON.stringify({buildExit:result.build.exit,php:result.phpSuite,browser:result.browserSuite},null,2));
+   if(result.build.exit!==0)failures.push('production build');
+   if(failures.length)throw Error(`Integrated verification failed: ${failures.join(', ')}`);
+  }
   else if(mode==='php'){if(!arg||!arg.startsWith('tests/')||!fs.existsSync(path.join(root,arg)))throw Error('Existing tests/ path required');boundary(path.resolve(root,arg),path.join(root,'tests'));php(['php','tools/testing/database.php']);php(['php','vendor/bin/phpunit',arg]);}
   else if(mode==='browser'){if(!arg||!arg.startsWith('tests/')||!fs.existsSync(path.join(root,arg)))throw Error('Existing tests/ path required');boundary(path.resolve(root,arg),path.join(root,'tests'));fresh();const base=await server();browser(arg,active);result.baseURL=base;}
   else if(mode==='build'){node(['npm','ci']);node(['npm','run','build']);fresh();const base=await server();const response=await http(base+'/login');assert.equal(response.status,200);assert.match(await response.text(),/\/build\/assets\//);browser(fs.existsSync(path.join(root,'tests/Browser/production.spec.js'))?'tests/Browser/production.spec.js':'tests/Browser/ProductionAssets.spec.js',active);result.productionAssetSmoke=true;}
@@ -121,4 +153,4 @@ try {
  }
  result.status='passed';
 } catch(error){result.error=String(error.stack||error);process.exitCode=1;console.error(result.error);}
-finally{for(const name of servers){command(['docker','rm','-f',name],{allowFailure:true});}result.finishedAt=new Date().toISOString();result.commands=commands;if(active){fs.writeFileSync(path.join(active.dir,'result.json'),JSON.stringify(result,null,2));console.log(`Evidence: ${active.dir}/result.json`);}if(locked)fs.rmdirSync(path.join(root,'.cache/check.lock'));}
+finally{try{const state=contentState(root);result.outputContentHash=state.contentHash;if(result.contentHash!==state.contentHash){result.staleContent=true;result.status='failed';result.error=[result.error,'Checkout content changed while verification was running'].filter(Boolean).join('\n');process.exitCode=1;}}catch(error){result.status='failed';result.error=String(error);process.exitCode=1;}for(const name of servers){command(['docker','rm','-f',name],{allowFailure:true});}result.finishedAt=new Date().toISOString();result.commands=commands;if(active){fs.writeFileSync(path.join(active.dir,'result.json'),JSON.stringify(result,null,2));console.log(`Evidence: ${active.dir}/result.json`);}if(locked)fs.rmdirSync(path.join(root,'.cache/check.lock'));}

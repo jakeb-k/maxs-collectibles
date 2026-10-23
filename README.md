@@ -1,7 +1,15 @@
-# Max’s Collectibles application workspace
+# Max’s Collectibles
 
-Core storefront, admin, checkout, protected order, account and communication flows are implemented. Integrated verification, final independent acceptance and real staging/launch acceptance remain pending. Canonical research, decisions and the assessed plan live in [jlib Projects](../jlib/projects/maxs-collectibles/MAP.md); see [current capabilities and limits](../jlib/projects/maxs-collectibles/implementation/capabilities.md).
+Laravel/Inertia/React storefront and administration for collectables, with inventory, checkout, protected orders and account flows. Local inventory and images are labelled synthetic fixtures; staging and launch acceptance require real owner inputs.
 
-[Open the implementation plan](../jlib/projects/maxs-collectibles/planning/plan-reader.html) · [Research reader](../jlib/projects/maxs-collectibles/research/research-reader.html)
+Install Docker with Compose and Node.js 20 or newer, then run from this checkout:
 
-Use the guarded local runner: `node tools/check.mjs compatibility`, `node tools/check.mjs browser tests/Browser/commerce.spec.js`, or `node tools/check.mjs build`. The complete integrated gate is `node tools/check.mjs fresh`. Read [local environment](docs/operations/local-environment.md) and [compatibility evidence](docs/operations/compatibility.md) before running checks. Local fixtures/providers are synthetic; production credentials/data and deployment are outside these local procedures.
+```sh
+node tools/dev.mjs up
+```
+
+Open **http://127.0.0.1:8000**. PHP, Composer, MySQL, frontend dependencies and builds run in containers. The preview persists between runs and has separate data from destructive tests. Stop it with `node tools/dev.mjs stop`. Fixture administrator: `browser-admin@example.test` / `isolated-password`.
+
+Run the complete build/PHP/browser gate with `node tools/check.mjs fresh`. CI executes the same gate. See [local setup, smoke tests and evidence](docs/operations/local-environment.md), [acceptance](docs/operations/acceptance.md) and [compatibility](docs/operations/compatibility.md). Implementation is not accepted until its required checks pass.
+
+Canonical research, decisions and assessed plans live in the separate [jlib repository](https://github.com/jakeb-k/jlib/tree/main/projects/maxs-collectibles). They are not required to launch this checkout.

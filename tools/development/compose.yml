@@ -1,0 +1,42 @@
+name: maxs-dev
+services:
+  mysql:
+    image: mysql:8.4@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70
+    hostname: maxs-test-mysql
+    environment:
+      MYSQL_DATABASE: maxs_test
+      MYSQL_USER: maxs_test
+      MYSQL_PASSWORD: maxs-isolated-password
+      MYSQL_ROOT_PASSWORD: maxs-isolated-root-only
+    volumes:
+      - ../../.cache/development/mysql:/var/lib/mysql
+      - ../testing/init.sql:/docker-entrypoint-initdb.d/guard.sql:ro
+    networks: [development]
+    healthcheck:
+      test: [CMD, mysqladmin, ping, -h, localhost, -pmaxs-isolated-root-only]
+      interval: 2s
+      timeout: 2s
+      retries: 60
+  php:
+    image: maxs-dev-php:8.4
+    build:
+      context: ../..
+      dockerfile: tools/testing/Dockerfile
+    working_dir: /app
+    env_file: ../../.cache/development/run.env
+    volumes: ["../..:/app"]
+    networks: [development]
+  web:
+    image: maxs-dev-php:8.4
+    working_dir: /app
+    env_file: ../../.cache/development/run.env
+    volumes: ["../..:/app"]
+    networks: [development]
+    ports: ["127.0.0.1:8000:8000"]
+    command: [php, artisan, serve, --host=0.0.0.0, --port=8000, --no-reload]
+    depends_on:
+      mysql:
+        condition: service_healthy
+networks:
+  development:
+    driver: bridge

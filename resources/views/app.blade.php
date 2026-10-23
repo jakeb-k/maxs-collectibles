@@ -5,11 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', "Max's Collectibles") }}</title>
+        @if(request()->is('/'))
+        <link rel="preload" href="{{ \Illuminate\Support\Facades\Vite::asset('resources/assets/fonts/Oswald-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
+        @endif
 
         @unless(request()->is('orders/*'))
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         @if(config('services.fontawesome.kit'))
         <script src="https://kit.fontawesome.com/{{ config('services.fontawesome.kit') }}.js" crossorigin="anonymous"></script>
         @endif

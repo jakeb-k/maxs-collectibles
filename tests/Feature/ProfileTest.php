@@ -33,7 +33,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'first_name' => 'Test',
                 'last_name' => 'User',
-                'mobile' => '412345678',
+                'mobile' => '0412345678',
                 'email' => 'test@example.com',
                 'street' => '123 Main St',
                 'city' => 'Anytown',
@@ -61,7 +61,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'first_name' => 'Test',
                 'last_name' => 'User',
-                'mobile' => '412345678',
+                'mobile' => '0412345678',
                 'email' => $user->email,
             ]);
 

@@ -2,20 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Image;
-use App\Models\Location;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
+use App\Models\{Order, OrderProduct, Product, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Auth;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Spatie\Permission\Models\Role;
-use Stripe\Checkout\Session;
-use Mockery;
-use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
 {
@@ -27,125 +18,56 @@ class OrderControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->user = User::factory()->create();
-        $this->user->assignRole(Role::create(["name" => "admin"]));
         $this->actingAs($this->user);
-        $images = Image::factory(3)->create();
-        $products = Product::factory(2)
-            ->create()
-            ->each(function ($product) use ($images) {
-                $product->images()->attach($images->pluck("id")->toArray());
-            });
-
-        $this->order = Order::factory()->create([
-            "user_id" => $this->user->id,
-            "session_id" => "valid_session_id",
-        ]);
-        foreach ($products as $product) {
-            $this->order->products()->attach($product->id, ["quantity" => 1]);
+        $this->order = Order::factory()->create(['user_id' => $this->user->id, 'session_id' => 'valid_session_id']);
+        foreach (Product::factory(2)->create() as $product) {
+            OrderProduct::factory()->create(['order_id' => $this->order->id, 'product_id' => $product->id, 'title' => $product->name]);
         }
-        $this->order->locations()->attach(Location::factory()->create()->id);
     }
 
     #[Test]
-    public function user_can_view_order_with_valid_id()
+    public function user_can_view_order_with_valid_id(): void
     {
-        // Mock a Stripe session retrieval
-        $mockSession = Mockery::mock("alias:" . Session::class);
-        $mockSession
-            ->shouldReceive("retrieve")
-            ->with("valid_session_id")
-            ->andReturn((object) ["id" => "valid_session_id"]);
-
-        $response = $this->actingAs($this->order->user)->get(
-            route("orders.show", [
-                "order" => $this->order->id,
-                "session_id" => "valid_session_id",
-            ])
-        );
-        $response
-            ->assertStatus(200)
-            ->assertInertia(
-                fn(Assert $page) => $page
-                    ->component("Products/OrderShowLayout")
-                    ->has(
-                        "order",
-                        fn(Assert $order) => $order
-                            ->has("locations")
-                            ->has("user")
-                            ->has("products")
-                            ->etc()
-                    )
-            );
+        $this->get(route('orders.show', ['order' => $this->order->id, 'session_id' => 'valid_session_id']))
+            ->assertRedirect(route('orders.show', $this->order));
+        $this->assertOrder();
     }
 
     #[Test]
-    public function user_cannot_view_order_with_invalid_session_id()
-    {
-        // Mock a failed Stripe session retrieval
-        $mockSession = Mockery::mock("alias:" . Session::class);
-        $mockSession
-            ->shouldReceive("retrieve")
-            ->with("invalid_session_id")
-            ->andReturnNull();
-
-        $response = $this->actingAs($this->order->user)->get(
-            route("orders.show", [
-                "order" => $this->order->id,
-                "session_id" => "invalid_session_id",
-            ])
-        );
-
-        $response->assertStatus(404);
-    }
-
-    #[Test]
-    public function user_can_view_past_orders()
-    {
-        $response = $this->actingAs($this->order->user)->get(
-            route("orders.show", $this->order->id)
-        );
-
-        $response
-            ->assertStatus(200)
-            ->assertInertia(
-                fn(Assert $page) => $page
-                    ->component("Products/OrderShowLayout")
-                    ->has(
-                        "order",
-                        fn(Assert $order) => $order
-                            ->has("locations")
-                            ->has("user")
-                            ->has("products")
-                            ->etc()
-                    )
-            );
-    }
-
-    #[Test]
-    public function unauthenticated_users_cannot_view_orders_without_session_id()
+    public function user_cannot_view_order_with_invalid_session_id(): void
     {
         Auth::logout();
-        $response = $this->get(route("orders.show", $this->order->id));
-
-        $response->assertStatus(403);
+        foreach (['invalid_session_id', 'valid_session_id'] as $session) {
+            $this->get(route('orders.show', ['order' => $this->order->id, 'session_id' => $session]))->assertForbidden();
+        }
     }
 
     #[Test]
-    public function users_can_only_view_their_orders()
+    public function user_can_view_past_orders(): void
     {
-        /** @var \App\Models\User $anotherUser */
-        $anotherUser = User::factory()->create();
-        $this->actingAs($anotherUser);
-        $response = $this->get(route("orders.show", $this->order->id));
-
-        $response->assertStatus(403);
+        $this->assertOrder();
     }
 
-    protected function tearDown(): void
+    private function assertOrder(): void
     {
-        Mockery::close(); // Close Mockery after tests
-        parent::tearDown();
+        $this->get(route('orders.show', $this->order))->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Products/OrderShowLayout')->where('order.id', $this->order->id)
+            ->where('order.contact.email', $this->order->contact_snapshot['email'])
+            ->where('order.delivery.street', $this->order->delivery_snapshot['street'])
+            ->has('order.lines', 2)->missing('order.user')->missing('order.session_id'));
+    }
+
+    #[Test]
+    public function unauthenticated_users_cannot_view_orders_without_session_id(): void
+    {
+        Auth::logout();
+        $this->get(route('orders.show', $this->order))->assertForbidden();
+    }
+
+    #[Test]
+    public function users_can_only_view_their_orders(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('orders.show', $this->order))->assertForbidden();
     }
 }

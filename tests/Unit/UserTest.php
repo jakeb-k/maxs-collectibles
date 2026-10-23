@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class UserTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
    #[Test]
     public function it_can_get_the_combined_name_attribute()
     {

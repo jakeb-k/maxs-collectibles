@@ -144,10 +144,11 @@ test("compiled CSR routes, responsive uploaded images and measured fixture perfo
         imageCount: document.images.length,
         overflow: document.documentElement.scrollWidth > innerWidth,
       }));
-      expect(data.overflow).toBe(false);
-      expect(data.cls).toBeLessThanOrEqual(0.1);
-      expect(data.lcp).toBeGreaterThan(0);
-      expect(data.lcp).toBeLessThan(8000);
+      const condition = `${viewport.width}px ${route}`;
+      expect(data.overflow, condition).toBe(false);
+      expect(data.cls, condition).toBeLessThanOrEqual(0.1);
+      expect(data.lcp, condition).toBeGreaterThan(0);
+      expect(data.lcp, condition).toBeLessThan(8000);
       expect(
         data.resources.some(
           (r) => r.name.includes("/build/assets/") && r.type === "script",

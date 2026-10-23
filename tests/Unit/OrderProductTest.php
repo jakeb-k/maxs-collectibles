@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class OrderProductTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
     public Order $order;
 
     public Product $product;
