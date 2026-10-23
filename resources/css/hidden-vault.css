@@ -1,0 +1,52 @@
+/* Hidden Vault storefront recipes. They take effect only after a page opts in. */
+@import "./hidden-vault-tokens.css";
+
+.hidden-vault {
+  color: var(--hv-text-on-light);
+  background: var(--hv-surface-light);
+  font-family: var(--font-ui);
+}
+
+.hidden-vault :focus-visible {
+  outline: 2px solid var(--hv-action-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--hv-text-on-light);
+}
+
+.hidden-vault [data-hv-surface="dark"] {
+  color: var(--hv-text-on-dark);
+  background: var(--hv-surface-dark);
+}
+
+.hidden-vault [data-hv-type="display"] {
+  font-family: var(--font-display);
+}
+
+.hidden-vault [data-hv-type="body-lg"] {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.hidden-vault [data-hv-action="primary"] {
+  color: var(--hv-action-foreground);
+  background: var(--hv-action-primary);
+  border: 1px solid var(--hv-action-primary);
+  border-radius: 4px;
+  transition: background-color var(--hv-motion-quick) var(--hv-motion-gentle), box-shadow var(--hv-motion-quick) var(--hv-motion-gentle), transform var(--hv-motion-quick) var(--hv-motion-gentle);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hidden-vault [data-hv-action="primary"]:hover:not(:disabled) {
+    box-shadow: var(--hv-warm-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hidden-vault *, .hidden-vault *::before, .hidden-vault *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

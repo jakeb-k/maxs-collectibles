@@ -1,0 +1,61 @@
+/*
+ * Hidden Vault tokens. Keep these values aligned with theme/hidden-vault.js.
+ * This is CSS-first because the application currently uses Tailwind v4.
+ */
+@theme {
+  --color-vault-black: #0D0C09;
+  --color-antique-gold: #C9A661;
+  --color-warm-stone: #E8DDC4;
+  --color-parchment: #F8F4E9;
+  --color-ink-stone: #3E3A32;
+  --color-coral-neon: #FF4D6D;
+  --color-violet-neon: #A735FF;
+  --color-teal-neon: #00C2B8;
+  --color-jade: #1F6F58;
+  --color-amber-light: #FFD67A;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-ui: Inter, Arial, sans-serif;
+  --font-annotation: Caveat, cursive;
+  --spacing-hv-1: 4px;
+  --spacing-hv-2: 8px;
+  --spacing-hv-4: 16px;
+  --spacing-hv-6: 24px;
+  --spacing-hv-8: 32px;
+  --spacing-hv-12: 48px;
+  --spacing-hv-16: 64px;
+  --radius-hv-sm: 4px;
+  --radius-hv-md: 8px;
+  --radius-hv-lg: 16px;
+}
+
+:root {
+  --hv-surface-dark: #0D0C09;
+  --hv-surface-light: #F8F4E9;
+  --hv-surface-soft: #E8DDC4;
+  --hv-surface-elevated: #3E3A32;
+  --hv-text-on-dark: #F8F4E9;
+  --hv-text-on-light: #0D0C09;
+  --hv-text-muted: #3E3A32;
+  --hv-text-muted-on-dark: #E8DDC4;
+  --hv-border-default: #E8DDC4;
+  --hv-border-strong: #3E3A32;
+  --hv-action-primary: #C9A661;
+  --hv-action-foreground: #0D0C09;
+  --hv-action-focus: #C9A661;
+  --hv-status-success: #1F6F58;
+  --hv-status-error-accent: #FF4D6D;
+  --hv-display-lg: 64px;
+  --hv-display-md: 40px;
+  --hv-display-sm: 28px;
+  --hv-heading-sm: 20px;
+  --hv-body: 16px;
+  --hv-small: 14px;
+  --hv-caption: 12px;
+  --hv-motion-quick: 200ms;
+  --hv-motion-standard: 300ms;
+  --hv-motion-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+  --hv-warm-glow: 0 0 18px rgba(201, 166, 97, 0.18);
+  --hv-soft-shadow: 0 7px 24px rgba(13, 12, 9, 0.1);
+  --hv-amber-glow: radial-gradient(ellipse at 50% 0%, rgba(255, 214, 122, 0.17), transparent 65%);
+  --hv-neon-reflection: linear-gradient(115deg, rgba(167, 53, 255, 0.09), rgba(0, 194, 184, 0.08), rgba(255, 77, 109, 0.09));
+}
