@@ -30,15 +30,15 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
         setMessage("Added to your bag.");
     };
 
-    return <div className="hidden-vault bg-[#F8F4E9] text-[#0D0C09]">
+    return <div className="hidden-vault vault-detail bg-[#F8F4E9] text-[#0D0C09]">
         <Head title={product.name} />
-        <div className="page-width py-6 md:py-8">
+        <div className="page-width py-6 md:py-8 vault-detail__inner">
             <nav className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]" aria-label="Breadcrumb">
                 <Link href={route("index")}>Home</Link><span aria-hidden="true"> / </span><Link href={route("products.index", "all")}>Collection</Link><span aria-hidden="true"> / </span><span>{product.name}</span>
             </nav>
-            <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:gap-12">
+            <div className="vault-detail__layout mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:gap-12">
                 <section aria-label="Item photographs" className="min-w-0">
-                    <div className="main-photo relative aspect-square overflow-hidden border border-[#3E3A32] bg-[#E8DDC4]" onKeyDown={(event) => { if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); chooseImage(imageIndex + (event.key === "ArrowRight" ? 1 : -1)); }} tabIndex={images.length > 1 ? 0 : undefined}>
+                    <div className="main-photo vault-detail__photo relative aspect-square overflow-hidden border border-[#3E3A32] bg-[#E8DDC4]" onKeyDown={(event) => { if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); chooseImage(imageIndex + (event.key === "ArrowRight" ? 1 : -1)); }} tabIndex={images.length > 1 ? 0 : undefined}>
                         <ProductImage image={selectedImage} name={product.name} eager className="h-full" />
                     </div>
                     {selectedImage?.caption && <p className="mt-3 text-sm text-[#3E3A32]">{selectedImage.caption}</p>}
