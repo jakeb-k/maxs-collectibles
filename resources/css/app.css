@@ -128,6 +128,9 @@ small {
 .storefront .admin-dashboard .surface * { color: var(--ink); }
 .storefront .admin-dashboard { background: var(--ground); }
 .storefront .admin-dashboard .button-light { color: #101513; }
+.storefront .admin-dashboard .surface input,
+.storefront .admin-dashboard .surface textarea,
+.storefront .admin-dashboard .surface select { background: #101713 !important; color: #edeee9 !important; border-color: #67766c !important; }
 .skip-link {
   position: fixed;
   left: 20px;
