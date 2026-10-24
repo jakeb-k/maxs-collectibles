@@ -3,7 +3,7 @@ import vaultNavigation from "@/content/vault-navigation";
 
 export default function MobileNavigationMenu({ closeMenu, openSearch }) {
     return (
-        <nav className="hidden-vault-mobile-menu" id="store-navigation" aria-label="Main navigation">
+        <div role="navigation" className="hidden-vault-mobile-menu" id="store-navigation" aria-label="Main navigation">
             <div className="hidden-vault-mobile-menu__actions">
                 <button type="button" onClick={openSearch}>Search the collection</button>
                 <Link href={route("products.index", "all")} onClick={closeMenu}>All objects</Link>
@@ -20,6 +20,6 @@ export default function MobileNavigationMenu({ closeMenu, openSearch }) {
                     ))}
                 </ul>
             </div>
-        </nav>
+        </div>
     );
 }

@@ -37,7 +37,7 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
                 <Link href={route("index")}>Home</Link><span aria-hidden="true"> / </span><Link href={route("products.index", "all")}>Collection</Link><span aria-hidden="true"> / </span><span>{product.name}</span>
             </nav>
             <div className="vault-detail__layout mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:gap-12">
-                <section aria-label="Item photographs" className="min-w-0">
+                <section aria-label="Item photographs" className="gallery min-w-0">
                     <div className="main-photo vault-detail__photo relative aspect-square overflow-hidden border border-[#3E3A32] bg-[#E8DDC4]" onKeyDown={(event) => { if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); chooseImage(imageIndex + (event.key === "ArrowRight" ? 1 : -1)); }} tabIndex={images.length > 1 ? 0 : undefined}>
                         <ProductImage image={selectedImage} name={product.name} eager className="h-full" />
                     </div>
