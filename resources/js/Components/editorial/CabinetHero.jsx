@@ -19,7 +19,7 @@ export default function CabinetHero({ product }) {
                 <Link data-hv-action="primary" aria-label="Explore the collection" href={route("products.index", "all")}>Explore the vault <span>→</span></Link>
             </div>
             {product && <Link className="hero-object" href={route("products.show", product.id)} aria-label={`View ${product.name}`}><span className="hero-object__index" aria-hidden="true">Object / 01</span><ProductImage image={product.images?.[0]} name={product.name} eager /></Link>}
-            <div className="vault-hero__trust" aria-label="Store promises"><span>◇ Rare & authentic</span><span>◎ Curated by experts</span><span>◌ Collector community</span><span>◎ Worldwide delivery</span></div>
+            <div className="vault-hero__trust" aria-label="Store information"><span>◇ Collector’s index</span><span>◎ Item details shown</span><span>◌ Quote before payment</span><span>◎ Australia checkout</span></div>
         </section>
     );
 }

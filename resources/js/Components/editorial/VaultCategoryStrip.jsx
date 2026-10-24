@@ -1,8 +1,10 @@
 import { Link } from "@inertiajs/react";
+import useVaultReveal from "@/hooks/useVaultReveal";
 
 export default function VaultCategoryStrip({ categories }) {
+    const reveal = useVaultReveal();
     return (
-        <section className="vault-categories" aria-labelledby="vault-categories-title">
+        <section ref={reveal} className="vault-categories" aria-labelledby="vault-categories-title">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p className="vault-kicker">Featured collections</p>
