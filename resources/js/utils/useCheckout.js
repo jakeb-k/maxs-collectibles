@@ -40,6 +40,9 @@ export default function useCheckout(resume, user) {
   const [changed, setChanged] = useState(false);
   const [closed, setClosed] = useState(false);
   const errorFocus = useRef(null);
+  useEffect(() => {
+    if (Object.keys(errors).length) errorFocus.current?.focus();
+  }, [errors]);
   const locked = Boolean(attempt && accepted);
   const invalidate = () => {
     if (!attempt) {
@@ -72,7 +75,6 @@ export default function useCheckout(resume, user) {
   const fail = (error, fallback) => {
     setErrors(error.response?.data?.errors || {});
     setMessage(error.response?.data?.message || fallback);
-    requestAnimationFrame(() => errorFocus.current?.focus());
   };
   const requestQuote = async (event) => {
     event.preventDefault();

@@ -78,6 +78,7 @@ export default function MainLayout({ children }) {
                 >
                     {menuOpen ? "Close menu" : "Menu"}
                 </button>
+                {menuOpen && <MobileNavigationMenu closeMenu={closeMenu} openSearch={openSearch} />}
                 <nav className="hidden-vault-desktop-nav" aria-label="Desktop navigation">
                     <Link href={route("products.index", "all")}>Collection</Link>
                     <Link href={route("products.index", "all")}>Watches</Link>
@@ -97,7 +98,6 @@ export default function MainLayout({ children }) {
                     {auth?.roles?.includes("admin") && <Link href={route("admin.dashboard")}>Admin</Link>}
                     {auth?.user && <Link href={route("logout")} method="post" as="button">Log out</Link>}
                 </div>
-                {menuOpen && <MobileNavigationMenu closeMenu={closeMenu} openSearch={openSearch} />}
                 {searchOpen && (
                     <section id="store-search" className="hidden-vault-search absolute inset-x-0 top-full z-30 border border-[#C9A661] bg-[#0D0C09] p-4 text-[#F8F4E9]" aria-label="Search the collection">
                         <div className="hidden-vault-search__heading">

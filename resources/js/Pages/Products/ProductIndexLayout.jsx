@@ -34,7 +34,7 @@ export default function ProductIndexLayout({ products = [], category = "all", fi
         <Head title={title} />
         <header className="vault-catalogue__masthead"><div><p>Collector’s index</p><h1>{title}</h1><span>{category === "all" ? "Rare finds, arranged for discovery." : "A distinct world within the vault."}</span></div></header>
         <div className="vault-catalogue__body"><nav className="vault-breadcrumb" aria-label="Breadcrumb"><Link href={route("index")}>Home</Link><span aria-hidden="true"> / </span><span>Collection</span></nav>
-        <header className="vault-catalogue__heading"><h2>{title}</h2><p aria-live="polite">{shown.length} {shown.length === 1 ? "object shown" : "objects shown"}</p></header>
+        <header className="vault-catalogue__heading"><h2>{category === "all" ? "Objects in the vault" : title}</h2><p aria-live="polite">{shown.length} {shown.length === 1 ? "object shown" : "objects shown"}</p></header>
         {!isFavourites && <form className="vault-filters" onSubmit={submit} aria-label="Filter the collection">
             <label className="text-sm font-medium">Search the collection<input type="search" value={draft.q} onChange={(event) => setField("q", event.target.value)} placeholder="Name, category or tag" /></label>
             {!tagged && <label className="text-sm font-medium">Type<input value={draft.type} onChange={(event) => setField("type", event.target.value)} placeholder="Current supported type" /></label>}
