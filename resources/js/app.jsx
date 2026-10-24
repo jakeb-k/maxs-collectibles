@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createInertiaApp } from "@inertiajs/react";
 import MainLayout from "./Layouts/MainLayout";
 createInertiaApp({
-  title: (title) => `${title} — Max’s Collectibles`,
+  title: (title) => `${title} — The Hidden Vault`,
   resolve: (name) => {
     const pages = import.meta.glob("./Pages/**/*.jsx", { eager: true });
     const page = pages[`./Pages/${name}.jsx`];

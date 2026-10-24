@@ -28,7 +28,7 @@ export default function Footer() {
         <footer className="store-footer hidden-vault-footer">
             <div className="page-width footer-grid">
                 <div>
-                    <Link className="wordmark" href={route("index")}>MAX’S<span>THE HIDDEN VAULT</span></Link>
+                    <Link className="wordmark" href={route("index")}>THE<span>HIDDEN VAULT</span></Link>
                     <p>Objects worth a closer look.</p>
                 </div>
                 <nav aria-label="Footer navigation">
@@ -39,7 +39,7 @@ export default function Footer() {
                 </nav>
                 <form onSubmit={subscribe}>
                     <label htmlFor="subscriber-email">Stay in the loop</label>
-                    <p>Updates from Max’s Collectibles.</p>
+                    <p>Updates from The Hidden Vault.</p>
                     <div className="subscribe-row">
                         <input id="subscriber-email" aria-invalid={invalid} aria-describedby={message ? "subscriber-status" : undefined} type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" />
                         <button className="button" type="submit" disabled={pending}>{pending ? "Joining…" : "Subscribe"}</button>
@@ -47,7 +47,7 @@ export default function Footer() {
                     <p id="subscriber-status" role="status">{message}</p>
                 </form>
             </div>
-            <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Max’s Collectibles</span><span>All prices in AUD</span></div>
+            <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} The Hidden Vault</span><span>All prices in AUD</span></div>
         </footer>
     );
 }

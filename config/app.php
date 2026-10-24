@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Max’s Collectibles'),
+    'name' => env('APP_NAME', 'The Hidden Vault'),
 
     /*
     |--------------------------------------------------------------------------
