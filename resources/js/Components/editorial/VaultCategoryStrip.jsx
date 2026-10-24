@@ -15,7 +15,8 @@ export default function VaultCategoryStrip({ categories }) {
                     <li key={category.key}>
                         <Link className={`vault-category vault-category--${category.key}`} href={category.href}>
                             <span className="vault-category__number">{String(index + 1).padStart(2, "0")}</span>
-                            <span><strong>{category.label}</strong><small>{["Time well collected.", "Exceptional details.", "Nature’s artwork.", "Icons. Rarities. Nostalgia.", "For the unexpected."][index]}</small></span>
+                            <span className="vault-category__star" aria-hidden="true">✦</span>
+                            <span className="vault-category__copy"><strong>{category.label}</strong><small>{["Time well collected.", "Exceptional details.", "Nature’s artwork.", "Icons. Rarities. Nostalgia.", "For the unexpected."][index]}</small></span>
                         </Link>
                     </li>
                 ))}
