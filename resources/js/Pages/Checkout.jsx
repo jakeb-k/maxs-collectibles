@@ -61,22 +61,22 @@ export default function Checkout({ resume }) {
     );
   };
   return (
-    <div className="hidden-vault bg-[#F8F4E9] text-[#0D0C09]">
-      <div className="page-width checkout-page py-8 md:py-12">
+    <div className="hidden-vault vault-checkout bg-[#F8F4E9] text-[#0D0C09]">
+      <div className="page-width checkout-page vault-checkout__inner py-8 md:py-12">
       <Head title="Checkout" />
       <nav className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]" aria-label="Breadcrumb">
         <Link href={route("products.index", "all")}>Collection</Link><span aria-hidden="true"> / </span><span>Checkout</span>
       </nav>
-      <header className="mt-5 border-b border-[#3E3A32] pb-6">
+      <header className="vault-checkout__intro mt-5 border-b border-[#3E3A32] pb-6">
         <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Secure checkout</p>
         <h1 data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)] leading-[1.29] md:text-[var(--hv-display-md)] md:leading-[1.2]">Review your quote.</h1>
         <p className="mt-3 max-w-2xl text-sm text-[#3E3A32]">Prices, stock, discounts and delivery are confirmed by the server before payment.</p>
       </header>
-      <div className="checkout-layout mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)] lg:items-start">
+      <div className="checkout-layout vault-checkout__layout mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)] lg:items-start">
         <div className="checkout-details">
           <ShoppingCart onEdit={invalidate} checkoutLink={false} />
           <form onSubmit={requestQuote} className="checkout-details mt-8 grid gap-6">
-            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+            <section className="surface vault-checkout__step border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Step 1</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">Contact details</h2>
               <div className="form-grid">
                 {field(
@@ -97,7 +97,7 @@ export default function Checkout({ resume }) {
                 {field("contact", "mobile", "Australian mobile", "tel", "tel")}
               </div>
             </section>
-            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+            <section className="surface vault-checkout__step border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Step 2</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">Delivery address</h2>
               <div className="form-grid">
                 {field(
@@ -134,7 +134,7 @@ export default function Checkout({ resume }) {
                 address lookup is required.
               </p>
             </section>
-            <section className="surface border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
+            <section className="surface vault-checkout__step border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6">
               <h2 data-hv-type="display" className="text-[var(--hv-heading-sm)]">Promo code</h2>
               <label htmlFor="promo-code">
                 Code (optional)
@@ -162,7 +162,7 @@ export default function Checkout({ resume }) {
             )}
           </form>
         </div>
-        <aside className="surface checkout-summary border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6 lg:sticky lg:top-6">
+        <aside className="surface checkout-summary vault-checkout__summary border border-[#3E3A32] bg-[#E8DDC4] p-5 md:p-6 lg:sticky lg:top-6">
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Server-authoritative</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-heading-sm)]">{attempt ? "Existing payment attempt" : "Review your quote"}</h2>
           {quote ? (
             <>
