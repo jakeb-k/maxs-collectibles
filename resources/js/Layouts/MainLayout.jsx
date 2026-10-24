@@ -61,7 +61,7 @@ export default function MainLayout({ children }) {
     return (
         <div className="storefront hidden-vault">
             <a className="skip-link" href="#main-content">Skip to content</a>
-            <header className="store-header hidden-vault-shell bg-[#0D0C09] text-[#F8F4E9] border-[#C9A661]">
+            <header className={`store-header hidden-vault-shell bg-[#0D0C09] text-[#F8F4E9] border-[#C9A661]${menuOpen ? " is-menu-open" : ""}${searchOpen ? " is-search-open" : ""}`}>
                 <Link className="wordmark" href={route("index")} aria-label="Max’s Collectibles home">
                     <span className="wordmark__the">THE</span> HIDDEN VAULT
                 </Link>
