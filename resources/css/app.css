@@ -126,6 +126,7 @@ small {
 .storefront .admin-dashboard,
 .storefront .admin-dashboard .surface,
 .storefront .admin-dashboard .surface * { color: var(--ink); }
+.storefront .admin-dashboard { background: var(--ground); }
 .storefront .admin-dashboard .button-light { color: #101513; }
 .skip-link {
   position: fixed;
