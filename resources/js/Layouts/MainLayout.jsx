@@ -79,7 +79,7 @@ export default function MainLayout({ children }) {
                     {menuOpen ? "Close menu" : "Menu"}
                 </button>
                 <nav className="hidden-vault-desktop-nav" aria-label="Main navigation">
-                    <Link href={route("products.index", "all")}>New in</Link>
+                    <Link href={route("products.index", "all")}>Collection</Link>
                     <Link href={route("products.index", "all")}>Watches</Link>
                     <Link href={route("products.index", "all")}>Jewellery</Link>
                     <Link href={route("products.index", "all")}>Opals</Link>
