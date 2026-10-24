@@ -42,7 +42,7 @@ export default function Footer() {
                     <p>Updates from The Hidden Vault.</p>
                     <div className="subscribe-row">
                         <input id="subscriber-email" aria-invalid={invalid} aria-describedby={message ? "subscriber-status" : undefined} type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" />
-                        <button className="button" type="submit" disabled={pending}>{pending ? "Joining…" : "Subscribe"}</button>
+                        <button className="button" type="submit" disabled={pending}>{pending ? "Joining…" : "Subscribe ↗"}</button>
                     </div>
                     <p id="subscriber-status" role="status">{message}</p>
                 </form>
