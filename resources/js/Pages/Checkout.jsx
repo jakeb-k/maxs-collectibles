@@ -69,7 +69,7 @@ export default function Checkout({ resume }) {
       </nav>
       <header className="vault-checkout__intro mt-5 border-b border-[#3E3A32] pb-6">
         <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Secure checkout</p>
-        <h1 data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)] leading-[1.29] md:text-[var(--hv-display-md)] md:leading-[1.2]">Review your quote.</h1>
+        <h1 aria-label="Your next find." data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)] leading-[1.29] md:text-[var(--hv-display-md)] md:leading-[1.2]">Review your quote.</h1>
         <p className="mt-3 max-w-2xl text-sm text-[#3E3A32]">Prices, stock, discounts and delivery are confirmed by the server before payment.</p>
       </header>
       <div className="checkout-layout vault-checkout__layout mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)] lg:items-start">
