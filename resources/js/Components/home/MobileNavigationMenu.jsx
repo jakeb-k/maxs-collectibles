@@ -6,7 +6,7 @@ export default function MobileNavigationMenu({ closeMenu, openSearch }) {
         <div role="navigation" className="hidden-vault-mobile-menu" id="store-navigation" aria-label="Main navigation">
             <div className="hidden-vault-mobile-menu__actions">
                 <button type="button" onClick={openSearch}>Search the collection</button>
-                <Link href={route("products.index", "all")} onClick={closeMenu}>All objects</Link>
+                <Link href={route("products.index", "all")} onClick={closeMenu}>Collection</Link>
                 <Link href={route("products.index", "favourites")} onClick={closeMenu}>Favourites</Link>
                 <Link href="/faqs" onClick={closeMenu}>Information</Link>
             </div>
