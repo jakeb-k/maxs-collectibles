@@ -16,7 +16,7 @@
 }
 :root {
   --ink: #edeee9;
-  --muted: #5c5343;
+  --muted: #acb5b1;
   --ground: #101513;
   --panel: #18201c;
   --line: #46534c;
@@ -123,6 +123,7 @@ small {
 .storefront {
   overflow-wrap: anywhere;
 }
+.admin-dashboard { color: var(--ink); }
 .skip-link {
   position: fixed;
   left: 20px;

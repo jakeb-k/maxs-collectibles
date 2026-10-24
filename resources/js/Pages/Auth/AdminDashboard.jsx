@@ -16,7 +16,7 @@ export default function AdminDashboard(props) {
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   return (
-    <div className="page-width py-12">
+    <div className="admin-dashboard page-width py-12">
       <Head title="Administration" />
       <p className="eyebrow">Max’s Collectibles / Administration</p>
       <h1 className="text-4xl my-6">Manage the collection.</h1>
