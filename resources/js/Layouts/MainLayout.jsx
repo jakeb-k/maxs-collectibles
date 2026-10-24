@@ -85,6 +85,7 @@ export default function MainLayout({ children }) {
                     <Link href={route("products.index", "all")}>Opals</Link>
                     <Link href={route("products.index", "all")}>Trading cards</Link>
                     <Link href={route("products.index", "all")}>Curiosities</Link>
+                    <Link href={route("products.index", "favourites")}>Favourites</Link>
                     <NavigationMenu closeMenu={closeMenu} />
                 </nav>
                 <div className="header-actions">
