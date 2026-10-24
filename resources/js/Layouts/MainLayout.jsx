@@ -63,7 +63,7 @@ export default function MainLayout({ children }) {
             <a className="skip-link" href="#main-content">Skip to content</a>
             <header className="store-header hidden-vault-shell bg-[#0D0C09] text-[#F8F4E9] border-[#C9A661]">
                 <Link className="wordmark" href={route("index")} aria-label="Max’s Collectibles home">
-                    MAX’S<span>THE HIDDEN VAULT</span>
+                    <span className="wordmark__the">THE</span> HIDDEN VAULT
                 </Link>
                 <button
                     ref={menuTrigger}
@@ -79,10 +79,12 @@ export default function MainLayout({ children }) {
                     {menuOpen ? "Close menu" : "Menu"}
                 </button>
                 <nav className="hidden-vault-desktop-nav" aria-label="Main navigation">
-                    <Link href={route("products.index", "all")}>Collection</Link>
-                    <Link href={route("products.index", "sale")}>On sale</Link>
-                    <Link href={route("products.index", "favourites")}>Favourites</Link>
-                    <Link href="/faqs">Information</Link>
+                    <Link href={route("products.index", "all")}>New in</Link>
+                    <Link href={route("products.index", "all")}>Watches</Link>
+                    <Link href={route("products.index", "all")}>Jewellery</Link>
+                    <Link href={route("products.index", "all")}>Opals</Link>
+                    <Link href={route("products.index", "all")}>Trading cards</Link>
+                    <Link href={route("products.index", "all")}>Curiosities</Link>
                     <NavigationMenu closeMenu={closeMenu} />
                 </nav>
                 <div className="header-actions">
