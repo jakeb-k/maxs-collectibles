@@ -4,6 +4,7 @@ export default function ProductImage({
   name,
   eager = false,
   className = "",
+  onLoad,
 }) {
   const [failed, setFailed] = useState(null);
   const src = image?.url;
@@ -36,6 +37,7 @@ export default function ProductImage({
       alt={image.alt_text || name}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
+      onLoad={onLoad}
       onError={() => setFailed(src)}
     />
   );

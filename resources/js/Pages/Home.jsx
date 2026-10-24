@@ -10,7 +10,7 @@ export default function Home({ products = [] }) {
       <Head title="The Hidden Vault" />
       <CabinetHero product={featured} />
       <VaultCategoryStrip categories={vaultNavigation.categories} />
-      <section className="bg-[#F8F4E9] px-4 py-12 text-[#0D0C09] md:px-8 lg:px-12">
+      <section className="vault-objects bg-[#F8F4E9] px-4 py-12 text-[#0D0C09] md:px-8 lg:px-12">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">Latest objects</p>

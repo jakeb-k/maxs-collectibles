@@ -1,5 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Disclosure from "@/Components/Vault/Disclosure";
 import QuantityInput from "@/Components/Vault/QuantityInput";
 import StatusMessage from "@/Components/Vault/StatusMessage";
@@ -14,6 +14,8 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
     const [selection, setSelection] = useState({});
     const [quantity, setQuantity] = useState(1);
     const [message, setMessage] = useState("");
+    const [galleryDirection, setGalleryDirection] = useState("forward");
+    const imageRequest = useRef(0);
     const addProduct = useCartStore((state) => state.addProduct);
     const { favourites, addFavourite, removeFavourite } = useFavouritesStore();
     const images = product.images || [];
@@ -22,7 +24,23 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
     const selectedImage = images[imageIndex];
     const category = product.tags?.filter((tag) => tag.type === "category").map((tag) => tag.name).join(" / ") || "The collection";
     const canAdd = product.purchasable && Number.isInteger(product.display_unit_minor) && options.every((option) => option.values.includes(selection[option.type]));
-    const chooseImage = (next) => setImageIndex((next + images.length) % images.length);
+    const chooseImage = (next) => {
+        const target = (next + images.length) % images.length;
+        if (target === imageIndex) return;
+        const direction = target > imageIndex || (imageIndex === images.length - 1 && target === 0) ? "forward" : "backward";
+        const source = images[target]?.url;
+        const request = ++imageRequest.current;
+        const show = () => {
+            if (request !== imageRequest.current) return;
+            setGalleryDirection(direction);
+            setImageIndex(target);
+        };
+        if (!source || typeof Image === "undefined") return show();
+        const preload = new Image();
+        preload.onload = show;
+        preload.onerror = show;
+        preload.src = source;
+    };
 
     const add = () => {
         if (!canAdd) return;
@@ -38,12 +56,12 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
             </nav>
             <div className="vault-detail__layout mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:gap-12">
                 <section aria-label="Item photographs" className="gallery min-w-0">
-                    <div className="main-photo vault-detail__photo relative aspect-square overflow-hidden border border-[#3E3A32] bg-[#E8DDC4]" onKeyDown={(event) => { if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); chooseImage(imageIndex + (event.key === "ArrowRight" ? 1 : -1)); }} tabIndex={images.length > 1 ? 0 : undefined}>
-                        <ProductImage image={selectedImage} name={product.name} eager className="h-full" />
+                    <div className={`main-photo vault-detail__photo vault-gallery vault-gallery--${galleryDirection} relative aspect-square overflow-hidden border border-[#3E3A32] bg-[#E8DDC4]`} onKeyDown={(event) => { if (images.length < 2 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); chooseImage(imageIndex + (event.key === "ArrowRight" ? 1 : -1)); }} tabIndex={images.length > 1 ? 0 : undefined}>
+                        <ProductImage key={selectedImage?.id || imageIndex} image={selectedImage} name={product.name} eager className="vault-gallery__image h-full" />
                     </div>
                     {selectedImage?.caption && <p className="mt-3 text-sm text-[#3E3A32]">{selectedImage.caption}</p>}
                     {images.length > 1 && <div className="gallery-controls mt-4 flex items-center justify-between gap-3"><button type="button" className="min-h-11 border border-[#3E3A32] px-4" onClick={() => chooseImage(imageIndex - 1)} aria-label="Previous photograph">Previous</button><p aria-live="polite" className="text-sm">{imageIndex + 1} / {images.length}</p><button type="button" className="min-h-11 border border-[#3E3A32] px-4" onClick={() => chooseImage(imageIndex + 1)} aria-label="Next photograph">Next</button></div>}
-                    {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5" aria-label="Choose an item photograph">{images.map((image, index) => <button key={image.id} type="button" className={`aspect-square overflow-hidden border ${index === imageIndex ? "border-2 border-[#C9A661]" : "border-[#3E3A32]"}`} onClick={() => setImageIndex(index)} aria-label={`View photograph ${index + 1}`} aria-pressed={index === imageIndex}><ProductImage image={image} name={`${product.name}, view ${index + 1}`} className="h-full" /></button>)}</div>}
+                    {images.length > 1 && <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5" aria-label="Choose an item photograph">{images.map((image, index) => <button key={image.id} type="button" className={`vault-thumbnail aspect-square overflow-hidden border ${index === imageIndex ? "border-2 border-[#C9A661]" : "border-[#3E3A32]"}`} onClick={() => chooseImage(index)} aria-label={`View photograph ${index + 1}`} aria-pressed={index === imageIndex}><ProductImage image={image} name={`${product.name}, view ${index + 1}`} className="h-full" /></button>)}</div>}
                 </section>
                 <section className="item-details min-w-0 lg:pt-3">
                     <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">{category}</p>
@@ -57,7 +75,7 @@ export default function ProductShowLayout({ product, relatedItems = [] }) {
                         <button type="button" className="min-h-11 text-left underline underline-offset-4" aria-pressed={saved} onClick={() => saved ? removeFavourite(product.id) : addFavourite(product.id)}>{saved ? "Remove from favourites" : "Save to favourites"}</button>
                         <StatusMessage>{message}</StatusMessage>
                     </div></div>
-                    <div className="mt-6 divide-y divide-[#E8DDC4] border-t border-[#E8DDC4]"><Disclosure title="Item details" defaultOpen><p className="whitespace-pre-line">{product.description || "No additional description is available."}</p></Disclosure>{product.facts?.length > 0 && <section className="border-b border-[var(--hv-border-default)] py-3"><h2 className="font-medium text-[var(--hv-text-on-light)]">Facts</h2><dl className="mt-3 grid gap-3 pb-1 text-[var(--hv-text-muted)]">{product.facts.map((fact, index) => <div key={`${fact.label}-${index}`} className="grid gap-1 sm:grid-cols-[minmax(8rem,0.35fr)_1fr]"><dt className="font-medium">{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl></section>}</div>
+                    <div className="mt-6 divide-y divide-[#E8DDC4] border-t border-[#E8DDC4]"><Disclosure title="Item details" defaultOpen><p className="whitespace-pre-line">{product.description || "No additional description is available."}</p></Disclosure>{product.facts?.length > 0 && <section className="border-b border-[var(--hv-border-default)] py-3"><h2 className="font-medium text-[var(--hv-text-on-light)]">Facts</h2><dl className="mt-3 grid gap-3 pb-1 text-[var(--hv-text-muted)]">{product.facts.map((fact, index) => <div key={`${fact.label}-${index}`} className="grid gap-1 sm:grid-cols-[minmax(8rem,0.35fr)_1fr]"><dt className="font-medium">{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl></section>}<p className="vault-annotation" aria-hidden="true"><span>✦</span> A closer look at extraordinary objects.</p></div>
                 </section>
             </div>
             {relatedItems.length > 0 && <section className="mt-12 border-t border-[#3E3A32] pt-8"><p className="text-xs font-medium uppercase tracking-[0.12em] text-[#3E3A32]">More to explore</p><h2 data-hv-type="display" className="mt-2 text-[var(--hv-display-sm)]">Continue exploring</h2><div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{relatedItems.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}
